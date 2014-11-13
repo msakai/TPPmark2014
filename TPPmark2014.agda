@@ -351,5 +351,38 @@ prop3b a b c a^2+b^2≡3c^2 = prop3a b a c b^2+a^2≡3*c^2
         3 * (c ^2)
       ∎
 
+prop3c-step
+  : ∀ c
+  → (∀ c' → (c' <′ c) → ∀ a' b' → (a' ^2 + b' ^2 ≡ 3 * (c' ^2)) → c' ≡ 0)
+  → ∀ a b → (a ^2 + b ^2 ≡ 3 * (c ^2)) → c ≡ 0
+prop3c-step zero rec a b P = refl
+prop3c-step (suc n) rec a b P = body
+  where
+    c : ℕ
+    c = suc n
+
+    body : c ≡ 0
+    body with (prop2a a b c P) | (prop2b a b c P) | (prop2c a b c P)
+    ... | divides a' a≡a'*3 | divides b' b≡b'*3 | divides c' c≡c'*3 =
+        begin
+          c
+        ≡⟨ c≡c'*3 ⟩
+          c' * 3
+        ≡⟨ cong (λ x → x * 3) c'≡0 ⟩
+          0 * 3
+        ≡⟨ refl ⟩
+          0
+        ∎
+      where
+        c'≡0 : c' ≡ 0
+        c'≡0 = rec c' (≤⇒≤′ c'<c) a' b' P3
+          where
+            P2 : (a' * 3) ^2 + (b' * 3) ^2 ≡ 3 * ((c' * 3) ^2)
+            P2 rewrite (sym a≡a'*3) | (sym b≡b'*3) | (sym c≡c'*3) = P
+            P3 : a' ^2 + b' ^2 ≡ 3 * (c' ^2)
+            P3 = lem3 a' b' c' P2
+            c'<c : c' < c
+            c'<c = 3∣sn⇒quot<sn n (divides c' c≡c'*3)
+
 prop3c : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → c ≡ 0
-prop3c a b c P = {!!}
+prop3c a b c = <-rec (λ n → ∀ a₁ b₁ → a₁ ^2 + b₁ ^2 ≡ 3 * n ^2 → n ≡ 0) prop3c-step c a b
