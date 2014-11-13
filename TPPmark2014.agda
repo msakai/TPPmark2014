@@ -306,37 +306,33 @@ prop3a-step
   → (∀ a' → (a' <′ a) → ∀ b' c' → (a' ^2 + b' ^2 ≡ 3 * (c' ^2)) → a' ≡ 0)
   → ∀ b c → (a ^2 + b ^2 ≡ 3 * (c ^2)) → a ≡ 0
 prop3a-step zero rec b c P = refl
-prop3a-step (suc n) rec b c P = trans a≡a'*3 a'*3≡0
+prop3a-step (suc n) rec b c P = body
   where
     a : ℕ
     a = suc n
-    3∣a : 3 ∣ a
-    3∣a = prop2a a b c P
-    3∣b : 3 ∣ b
-    3∣b = prop2b a b c P
-    3∣c : 3 ∣ c
-    3∣c = prop2c a b c P
-    a' : ℕ
-    a' = quotient 3∣a
-    b' : ℕ
-    b' = quotient 3∣b
-    c' : ℕ
-    c' = quotient 3∣c
-    a'≡0 : a' ≡ 0
-    a'≡0 = rec a' (≤⇒≤′ a'<a) b' c' P3
+
+    body : a ≡ 0
+    body with (prop2a a b c P) | (prop2b a b c P) | (prop2c a b c P)
+    ... | divides a' a≡a'*3 | divides b' b≡b'*3 | divides c' c≡c'*3 =
+        begin
+          a
+        ≡⟨ a≡a'*3 ⟩
+          a' * 3
+        ≡⟨ cong (λ x → x * 3) a'≡0 ⟩
+          0 * 3
+        ≡⟨ refl ⟩
+          0
+        ∎
       where
-        P2 : (a' * 3) ^2 + (b' * 3) ^2 ≡ 3 * ((c' * 3) ^2)
-        P2 with 3∣a | 3∣b | 3∣c
-        ... | divides a' eq1 | divides b' eq2 | divides c' eq3 rewrite (sym eq1) | (sym eq2) | (sym eq3) = P
-        P3 : a' ^2 + b' ^2 ≡ 3 * (c' ^2)
-        P3 = lem3 a' b' c' P2
-        a'<a : a' < a
-        a'<a = 3∣sn→q<sn n 3∣a
-    a'*3≡0 : a' * 3 ≡ 0
-    a'*3≡0 = cong (λ x → x * 3) a'≡0
-    a≡a'*3 : a ≡ a' * 3
-    a≡a'*3 with 3∣a
-    ... | divides _ eq1 = eq1
+        a'≡0 : a' ≡ 0
+        a'≡0 = rec a' (≤⇒≤′ a'<a) b' c' P3
+          where
+            P2 : (a' * 3) ^2 + (b' * 3) ^2 ≡ 3 * ((c' * 3) ^2)
+            P2 rewrite (sym a≡a'*3) | (sym b≡b'*3) | (sym c≡c'*3) = P
+            P3 : a' ^2 + b' ^2 ≡ 3 * (c' ^2)
+            P3 = lem3 a' b' c' P2
+            a'<a : a' < a
+            a'<a = 3∣sn→q<sn n (divides a' a≡a'*3)
 
 -- (iii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then a = b = c = 0.
 prop3a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → a ≡ 0
