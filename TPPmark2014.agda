@@ -20,6 +20,8 @@ open import Relation.Nullary.Decidable
 open import Function
 open ≡-Reasoning
 
+-- ---------------------------------------------------------------------------
+
 mod-dist-+ : ∀ (a b : ℕ) → (a + b) mod 3 ≡ (toℕ (a mod 3) + toℕ (b mod 3)) mod 3
 mod-dist-+ a b = {!!}
 
@@ -178,6 +180,26 @@ prop2c a b c P = 3∣^2→3∣ 3∣c^2
     3∣c^2 = /-cong 2 9∣3*c^2
 
 -- ---------------------------------------------------------------------------
+
+lem1 : ∀ {a} → (3∣a : 3 ∣ a) → ¬ a ≡ 0 → quotient 3∣a < a
+lem1 {a} (divides q a≡q*3) a≢0 = {!!}
+
+lem2 : ∀ {a} → (3∣a : 3 ∣ a) → (quotient 3∣a ≡ 0) → a ≡ 0
+lem2 {a} (divides q a≡q*3) q≡0 = begin
+    a
+  ≡⟨ a≡q*3 ⟩
+    q * 3
+  ≡⟨ cong (λ x → x * 3) q≡0 ⟩
+    0 * 3
+  ≡⟨ refl ⟩
+    0
+  ∎
+
+lem3 : ∀ {a} → (3∣a : 3 ∣ a) → ¬ a ≡ 0 → ¬ (quotient 3∣a ≡ 0)
+lem3 {a} 3∣a a≢0 q∣a≡0 = a≢0 (lem2 3∣a q∣a≡0)
+
+lem4 : ∀ (a b c : ℕ) → ((3 * a) ^2 + (3 * b) ^2 ≡ 3 * (3 * c) ^2) → a ^2 + b ^2 ≡ 3 * (c ^2)
+lem4 a b c P = {!!}
 
 -- (iii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then a = b = c = 0.
 prop3a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → a ≡ 0
