@@ -119,8 +119,8 @@ lem2 a b c P with prop1 a
                   Fin.zero
                 ∎
 
-rem0→∣ : ∀ {a} → (a mod 3 ≡ Fin.zero) → (3 ∣ a)
-rem0→∣ {a} P = divides (a div 3) $ begin
+quot≡0⇒3∣ : ∀ {a} → (a mod 3 ≡ Fin.zero) → (3 ∣ a)
+quot≡0⇒3∣ {a} P = divides (a div 3) $ begin
       a
     ≡⟨ DivMod.property (a divMod 3) ⟩
       toℕ (a mod 3) + (a div 3) * 3
@@ -147,20 +147,20 @@ rem0→∣ {a} P = divides (a div 3) $ begin
           Fin.zero
         ∎
 
-3∣^2→3∣ : ∀ {a} → (3 ∣ a ^2) → (3 ∣ a)
-3∣^2→3∣ {a} P with 3∣*-split a a P
+3∣^2⇒3∣ : ∀ {a} → (3 ∣ a ^2) → (3 ∣ a)
+3∣^2⇒3∣ {a} P with 3∣*-split a a P
 ... | inj₁ p = p
 ... | inj₂ p = p
 
 -- (ii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then (3 | a), (3 | b) and (3 | c).
 prop2a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ a)
-prop2a a b c a^2+b^2≡3c^2 = 3∣^2→3∣ 3∣a^2
+prop2a a b c a^2+b^2≡3c^2 = 3∣^2⇒3∣ 3∣a^2
   where
     lem : (a ^2) mod 3 ≡ Fin.zero
     lem = lem2 a b c a^2+b^2≡3c^2
 
     3∣a^2 : 3 ∣ a ^2
-    3∣a^2 = rem0→∣ lem
+    3∣a^2 = quot≡0⇒3∣ lem
 
 prop2b : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ b)
 prop2b a b c a^2+b^2≡3c^2 = prop2a b a c b^2+a^2≡3*c^2
@@ -174,8 +174,8 @@ prop2b a b c a^2+b^2≡3c^2 = prop2a b a c b^2+a^2≡3*c^2
         3 * (c ^2)
       ∎
 
-3∣→9∣^2 : ∀ {a} → (3 ∣ a) → (9 ∣ a ^2)
-3∣→9∣^2 {a} (divides q P) = divides (q * q) $ begin
+3∣⇒9∣^2 : ∀ {a} → (3 ∣ a) → (9 ∣ a ^2)
+3∣⇒9∣^2 {a} (divides q P) = divides (q * q) $ begin
     a ^2
   ≡⟨ cong (λ x → x ^2) P ⟩
     (q * 3) ^2
@@ -198,13 +198,13 @@ prop2b a b c a^2+b^2≡3c^2 = prop2a b a c b^2+a^2≡3*c^2
   ∎
 
 prop2c : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ c)
-prop2c a b c P = 3∣^2→3∣ 3∣c^2
+prop2c a b c P = 3∣^2⇒3∣ 3∣c^2
   where
     9∣a^2 : 9 ∣ a ^2
-    9∣a^2 = 3∣→9∣^2 (prop2a a b c P)
+    9∣a^2 = 3∣⇒9∣^2 (prop2a a b c P)
 
     9∣b^2 : 9 ∣ b ^2
-    9∣b^2 = 3∣→9∣^2 (prop2b a b c P)
+    9∣b^2 = 3∣⇒9∣^2 (prop2b a b c P)
 
     9∣a^2+b^2 : 9 ∣ a ^2 + b ^2
     9∣a^2+b^2 = ∣-+ 9∣a^2 9∣b^2
@@ -294,9 +294,9 @@ s<s*3 m = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
     P : 1 + m < (2 + n) * (1 + m)
     P = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
 
-3∣sn→q<sn : ∀ n → (3∣sn : 3 ∣ suc n) → quotient 3∣sn < suc n
-3∣sn→q<sn n (divides zero ())
-3∣sn→q<sn n (divides (suc m) sn≡sm*3) = subst (λ x → suc m < x) (sym sn≡sm*3) P
+3∣sn⇒quot<sn : ∀ n → (3∣sn : 3 ∣ suc n) → quotient 3∣sn < suc n
+3∣sn⇒quot<sn n (divides zero ())
+3∣sn⇒quot<sn n (divides (suc m) sn≡sm*3) = subst (λ x → suc m < x) (sym sn≡sm*3) P
   where
     P : suc m < suc m * 3
     P = s<s*3 m
@@ -332,7 +332,7 @@ prop3a-step (suc n) rec b c P = body
             P3 : a' ^2 + b' ^2 ≡ 3 * (c' ^2)
             P3 = lem3 a' b' c' P2
             a'<a : a' < a
-            a'<a = 3∣sn→q<sn n (divides a' a≡a'*3)
+            a'<a = 3∣sn⇒quot<sn n (divides a' a≡a'*3)
 
 -- (iii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then a = b = c = 0.
 prop3a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → a ≡ 0
