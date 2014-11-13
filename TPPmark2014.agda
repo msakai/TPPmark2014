@@ -65,7 +65,7 @@ quot≡0⇒3∣ {a} P = divides (a div 3) $ begin
     ∎
 
 -- TODO: 3が素数であることを利用して証明したいが、面倒なので a mod 3 と b mod 3 による場合分けで力技で証明する方針で
-3∣*-split : ∀ (a b : ℕ) → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
+3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
 3∣*-split a b (divides q a*b≡q*3) = {!!}
   where
     P : (toℕ (a mod 3) * toℕ (b mod 3)) mod 3 ≡ Fin.zero
@@ -168,7 +168,7 @@ prop1 a rewrite mod-dist-* a a with a mod 3
 
 -- ---------------------------------------------------------------------------
 
-lem1 : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2))
+lem1 : ∀ a b c → a ^2 + b ^2 ≡ 3 * (c ^2)
     → (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3 ≡ Fin.zero
 lem1 a b c P = begin
     (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3
@@ -180,7 +180,7 @@ lem1 a b c P = begin
     Fin.zero
       ∎
 
-lem2 : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2))
+lem2 : ∀ a b c → a ^2 + b ^2 ≡ 3 * (c ^2)
     → (a ^2) mod 3 ≡ Fin.zero
 lem2 a b c P with prop1 a
 ... | inj₁ p = p
@@ -265,7 +265,7 @@ prop2c a b c P = 3∣^2⇒3∣ 3∣c^2
 -- ---------------------------------------------------------------------------
 -- (iii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then a = b = c = 0.
 
-lem3 : ∀ (a b c : ℕ) → (a * 3) ^2 + (b * 3) ^2 ≡ 3 * (c * 3) ^2 → a ^2 + b ^2 ≡ 3 * (c ^2)
+lem3 : ∀ a b c → (a * 3) ^2 + (b * 3) ^2 ≡ 3 * (c * 3) ^2 → a ^2 + b ^2 ≡ 3 * (c ^2)
 lem3 a b c P = cancel-*-right (a ^2 + b ^2) (3 * (c ^2)) Q
   where
     f : ∀ m n → (m * n) ^2 ≡ m ^2 * n ^2
