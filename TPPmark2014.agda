@@ -65,9 +65,9 @@ prop1 a rewrite mod-dist-* a a with a mod 3
 
 -- ---------------------------------------------------------------------------
 
-lem5 : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2))
+lem1 : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2))
     → (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3 ≡ Fin.zero
-lem5 a b c P = begin
+lem1 a b c P = begin
     (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3
       ≡⟨ sym (mod-dist-+ (a ^2) (b ^2)) ⟩
     ((a ^2) + (b ^2)) mod 3
@@ -77,9 +77,9 @@ lem5 a b c P = begin
     Fin.zero
       ∎
 
-lem6 : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2))
+lem2 : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2))
     → (a ^2) mod 3 ≡ Fin.zero
-lem6 a b c P with prop1 a
+lem2 a b c P with prop1 a
 ... | inj₁ p = p
 ... | inj₂ p with prop1 b
 ...     | inj₁ q = ⊥-elim (1≢0 1≡0)
@@ -97,7 +97,7 @@ lem6 a b c P with prop1 a
                   (toℕ ((a ^2) mod 3) + toℕ (Fin.zero {2})) mod 3
                 ≡⟨ cong (λ x → (toℕ ((a ^2) mod 3) + toℕ x) mod 3) (sym q) ⟩
                   (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3
-                ≡⟨ lem5 a b c P ⟩
+                ≡⟨ lem1 a b c P ⟩
                   Fin.zero
                 ∎
 ...     | inj₂ q = ⊥-elim (2≢0 2≡0)
@@ -115,7 +115,7 @@ lem6 a b c P with prop1 a
                   (toℕ ((a ^2) mod 3) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
                 ≡⟨ cong (λ x → (toℕ ((a ^2) mod 3) + toℕ x) mod 3) (sym q) ⟩
                   (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3
-                ≡⟨ lem5 a b c P ⟩
+                ≡⟨ lem1 a b c P ⟩
                   Fin.zero
                 ∎
 
@@ -130,8 +130,22 @@ rem0→∣ {a} P = divides (a div 3) $ begin
       (a div 3) * 3
     ∎
 
+-- TODO: 3が素数であることを利用して証明したいが、面倒なので a mod 3 と b mod 3 による場合分けで力技で証明する方針で
 3∣*-split : ∀ (a b : ℕ) → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
-3∣*-split a b P = {!!}
+3∣*-split a b (divides q a*b≡q*3) = {!!}
+  where
+    P : (toℕ (a mod 3) * toℕ (b mod 3)) mod 3 ≡ Fin.zero
+    P = begin
+          (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
+        ≡⟨ sym (mod-dist-* a b) ⟩
+          (a * b) mod 3
+        ≡⟨ cong (λ x → x mod 3) a*b≡q*3 ⟩
+          (q * 3) mod 3
+        ≡⟨ cong (λ x → x mod 3) (*-comm q 3) ⟩
+          (3 * q) mod 3
+        ≡⟨ mod-dist-* 3 q ⟩
+          Fin.zero
+        ∎
 
 3∣^2→3∣ : ∀ {a} → (3 ∣ a ^2) → (3 ∣ a)
 3∣^2→3∣ {a} P with 3∣*-split a a P
@@ -143,7 +157,7 @@ prop2a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ a)
 prop2a a b c a^2+b^2≡3c^2 = 3∣^2→3∣ 3∣a^2
   where
     lem : (a ^2) mod 3 ≡ Fin.zero
-    lem = lem6 a b c a^2+b^2≡3c^2
+    lem = lem2 a b c a^2+b^2≡3c^2
 
     3∣a^2 : 3 ∣ a ^2
     3∣a^2 = rem0→∣ lem
@@ -203,42 +217,42 @@ prop2c a b c P = 3∣^2→3∣ 3∣c^2
 
 -- ---------------------------------------------------------------------------
 
-lem1 : ∀ {a} → (3∣a : 3 ∣ a) → ¬ a ≡ 0 → quotient 3∣a < a
-lem1 {a} (divides q a≡q*3) a≢0 = {!!}
-
-lem2 : ∀ {a} → (3∣a : 3 ∣ a) → (quotient 3∣a ≡ 0) → a ≡ 0
-lem2 {a} (divides q a≡q*3) q≡0 = begin
-    a
-  ≡⟨ a≡q*3 ⟩
-    q * 3
-  ≡⟨ cong (λ x → x * 3) q≡0 ⟩
-    0 * 3
-  ≡⟨ refl ⟩
-    0
-  ∎
-
-lem3 : ∀ {a} → (3∣a : 3 ∣ a) → ¬ a ≡ 0 → ¬ (quotient 3∣a ≡ 0)
-lem3 {a} 3∣a a≢0 q∣a≡0 = a≢0 (lem2 3∣a q∣a≡0)
-
-lem4 : ∀ (a b c : ℕ) → ((3 * a) ^2 + (3 * b) ^2 ≡ 3 * (3 * c) ^2) → a ^2 + b ^2 ≡ 3 * (c ^2)
-lem4 a b c P = {!!}
-
-lem : ∀ (a b c : ℕ) → (a * 3) ^2 + (b * 3) ^2 ≡ 3 * (c * 3) ^2 → a ^2 + b ^2 ≡ 3 * (c ^2)
-lem a b c P = cancel-*-right (a ^2 + b ^2) (3 * (c ^2)) Q
+lem3 : ∀ (a b c : ℕ) → (a * 3) ^2 + (b * 3) ^2 ≡ 3 * (c * 3) ^2 → a ^2 + b ^2 ≡ 3 * (c ^2)
+lem3 a b c P = cancel-*-right (a ^2 + b ^2) (3 * (c ^2)) Q
   where
-    Q : (a ^2 + b ^2) * 9 ≡ (3 * (c ^2)) * 9
+    f : ∀ m n → (m * n) ^2 ≡ m ^2 * n ^2
+    f m n = 
+      begin
+        (m * n) ^2
+      ≡⟨ refl ⟩
+        (m * n) * (m * n)
+      ≡⟨ *-assoc m n (m * n) ⟩
+        m * (n * (m * n))
+      ≡⟨ cong (λ x → m * x) (*-comm n (m * n)) ⟩
+        m * ((m * n) * n)
+      ≡⟨ cong (λ x → m * x) (*-assoc m n n) ⟩
+        m * (m * (n * n))
+      ≡⟨ sym (*-assoc m m (n * n)) ⟩
+        (m * m) * (n * n)
+      ≡⟨ refl ⟩
+        m ^2 * n ^2
+      ∎
+
+    Q : (a ^2 + b ^2) * 3 ^2 ≡ (3 * (c ^2)) * 3 ^2
     Q = begin
-          (a ^2 + b ^2) * 9
-        ≡⟨ distribʳ-*-+ 9 (a ^2) (b ^2) ⟩
-          (a ^2 * 9 + b ^2 * 9)
-        ≡⟨ {!!} ⟩
+          (a ^2 + b ^2) * 3 ^2
+        ≡⟨ distribʳ-*-+ (3 ^2) (a ^2) (b ^2) ⟩
+          a ^2 * 3 ^2 + b ^2 * 3 ^2
+        ≡⟨ cong (λ x → x + b ^2 * 3 ^2) (sym (f a 3)) ⟩
+          (a * 3) ^2 + b ^2 * 3 ^2
+        ≡⟨ cong (λ x → (a * 3) ^2 + x) (sym (f b 3)) ⟩
           (a * 3) ^2 + (b * 3) ^2
         ≡⟨ P ⟩
           3 * (c * 3) ^2
-        ≡⟨ refl ⟩
-          3 * ((c * 3) * (c * 3))
-        ≡⟨ {!!} ⟩
-          (3 * (c ^2)) * 9
+        ≡⟨ cong (λ x → 3 * x) (f c 3) ⟩
+          3 * (c ^2 * 3 ^2)
+        ≡⟨ sym (*-assoc 3 (c ^2) (3 ^2)) ⟩
+          (3 * c ^2) * 3 ^2
         ∎
 
 s<s*3 : ∀ m → suc m < suc m * 3
@@ -307,17 +321,22 @@ prop3a-step (suc n) rec b c P = trans a≡a'*3 a'*3≡0
     b' : ℕ
     b' = quotient 3∣b
     c' : ℕ
-    c' = quotient 3∣b
-    Q : a' ^2 + b' ^2 ≡ 3 * (c' ^2)
-    Q = {!!}
-    a'<a : a' < a
-    a'<a = 3∣sn→q<sn n 3∣a
+    c' = quotient 3∣c
     a'≡0 : a' ≡ 0
-    a'≡0 = rec a' (≤⇒≤′ a'<a) b' c' Q
+    a'≡0 = rec a' (≤⇒≤′ a'<a) b' c' P3
+      where
+        P2 : (a' * 3) ^2 + (b' * 3) ^2 ≡ 3 * ((c' * 3) ^2)
+        P2 with 3∣a | 3∣b | 3∣c
+        ... | divides a' eq1 | divides b' eq2 | divides c' eq3 rewrite (sym eq1) | (sym eq2) | (sym eq3) = P
+        P3 : a' ^2 + b' ^2 ≡ 3 * (c' ^2)
+        P3 = lem3 a' b' c' P2
+        a'<a : a' < a
+        a'<a = 3∣sn→q<sn n 3∣a
     a'*3≡0 : a' * 3 ≡ 0
     a'*3≡0 = cong (λ x → x * 3) a'≡0
     a≡a'*3 : a ≡ a' * 3
-    a≡a'*3 = {!!}
+    a≡a'*3 with 3∣a
+    ... | divides _ eq1 = eq1
 
 -- (iii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then a = b = c = 0.
 prop3a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → a ≡ 0
