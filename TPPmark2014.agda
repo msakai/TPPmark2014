@@ -53,8 +53,8 @@ mod-dist-* a b = {!!}
 _^2 : ℕ → ℕ
 _^2 n = n * n
 
-quot≡0⇒∣ : ∀ {a n} → (a mod (suc n) ≡ Fin.zero) → (suc n ∣ a)
-quot≡0⇒∣ {a} {n} P = divides (a div m) $ begin
+rem≡0⇒∣ : ∀ {a n} → (a mod (suc n) ≡ Fin.zero) → (suc n ∣ a)
+rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
       a
     ≡⟨ DivMod.property (a divMod m) ⟩
       toℕ (a mod m) + (a div m) * m
@@ -233,7 +233,7 @@ prop2a a b c a^2+b^2≡3c^2 = 3∣^2⇒3∣ 3∣a^2
     lem = lem2 a b c a^2+b^2≡3c^2
 
     3∣a^2 : 3 ∣ a ^2
-    3∣a^2 = quot≡0⇒∣ lem
+    3∣a^2 = rem≡0⇒∣ lem
 
 prop2b : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ b)
 prop2b a b c a^2+b^2≡3c^2 = prop2a b a c b^2+a^2≡3*c^2
