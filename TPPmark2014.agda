@@ -162,7 +162,7 @@ s<s*3 m = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
 -- ---------------------------------------------------------------------------
 -- (i) For any a ∈ N, (a^2 mod 3) = 0 or (a^2 mod 3) = 1.
 
-prop1 : ∀ (a : ℕ) → (a ^2) mod 3 ≡ Fin.zero ⊎ (a ^2) mod 3 ≡ Fin.suc (Fin.zero)
+prop1 : ∀ (a : ℕ) → a ^2 mod 3 ≡ Fin.zero ⊎ a ^2 mod 3 ≡ Fin.suc (Fin.zero)
 prop1 a rewrite mod-dist-* a a with a mod 3
 ... | Fin.zero = inj₁ refl
 ... | (Fin.suc Fin.zero) = inj₂ refl
@@ -172,19 +172,19 @@ prop1 a rewrite mod-dist-* a a with a mod 3
 -- ---------------------------------------------------------------------------
 
 private
-  lem1 : ∀ a b c → a ^2 + b ^2 ≡ 3 * (c ^2)
-      → (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3 ≡ Fin.zero
+  lem1 : ∀ a b c → a ^2 + b ^2 ≡ 3 * c ^2
+      → (toℕ (a ^2 mod 3) + toℕ (b ^2 mod 3)) mod 3 ≡ Fin.zero
   lem1 a b c P = begin
-      (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3
+      (toℕ (a ^2 mod 3) + toℕ (b ^2 mod 3)) mod 3
         ≡⟨ sym (mod-dist-+ (a ^2) (b ^2)) ⟩
-      ((a ^2) + (b ^2)) mod 3
+      (a ^2 + b ^2) mod 3
         ≡⟨ cong (λ (n : ℕ) → n mod 3) P ⟩
-      (3 * (c ^2)) mod 3
+      (3 * c ^2) mod 3
         ≡⟨ mod-dist-* 3 (c ^2) ⟩
       Fin.zero
         ∎
   
-  lem2 : ∀ a b c → a ^2 + b ^2 ≡ 3 * (c ^2) → (a ^2) mod 3 ≡ Fin.zero
+  lem2 : ∀ a b c → a ^2 + b ^2 ≡ 3 * c ^2 → a ^2 mod 3 ≡ Fin.zero
   lem2 a b c P with prop1 a
   ... | inj₁ p = p
   ... | inj₂ p with prop1 b
@@ -200,9 +200,9 @@ private
                   ≡⟨ refl ⟩
                     (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.zero {2})) mod 3
                   ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.zero {2})) mod 3) (sym p) ⟩
-                    (toℕ ((a ^2) mod 3) + toℕ (Fin.zero {2})) mod 3
-                  ≡⟨ cong (λ x → (toℕ ((a ^2) mod 3) + toℕ x) mod 3) (sym q) ⟩
-                    (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3
+                    (toℕ (a ^2 mod 3) + toℕ (Fin.zero {2})) mod 3
+                  ≡⟨ cong (λ x → (toℕ (a ^2 mod 3) + toℕ x) mod 3) (sym q) ⟩
+                    (toℕ (a ^2 mod 3) + toℕ (b ^2 mod 3)) mod 3
                   ≡⟨ lem1 a b c P ⟩
                     Fin.zero
                   ∎
@@ -218,36 +218,36 @@ private
                   ≡⟨ refl ⟩
                     (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
                   ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.suc (Fin.zero {1}))) mod 3) (sym p) ⟩
-                    (toℕ ((a ^2) mod 3) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
-                  ≡⟨ cong (λ x → (toℕ ((a ^2) mod 3) + toℕ x) mod 3) (sym q) ⟩
-                    (toℕ ((a ^2) mod 3) + toℕ ((b ^2) mod 3)) mod 3
+                    (toℕ (a ^2 mod 3) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
+                  ≡⟨ cong (λ x → (toℕ (a ^2 mod 3) + toℕ x) mod 3) (sym q) ⟩
+                    (toℕ (a ^2 mod 3) + toℕ (b ^2 mod 3)) mod 3
                   ≡⟨ lem1 a b c P ⟩
                     Fin.zero
                   ∎
 
 -- (ii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then (3 | a), (3 | b) and (3 | c).
-prop2a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ a)
+prop2a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * c ^2) → (3 ∣ a)
 prop2a a b c a^2+b^2≡3c^2 = 3∣^2⇒3∣ 3∣a^2
   where
-    lem : (a ^2) mod 3 ≡ Fin.zero
+    lem : a ^2 mod 3 ≡ Fin.zero
     lem = lem2 a b c a^2+b^2≡3c^2
 
     3∣a^2 : 3 ∣ a ^2
     3∣a^2 = rem≡0⇒∣ lem
 
-prop2b : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ b)
+prop2b : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * c ^2) → (3 ∣ b)
 prop2b a b c a^2+b^2≡3c^2 = prop2a b a c b^2+a^2≡3*c^2
   where
-    b^2+a^2≡3*c^2 : (b ^2 + a ^2 ≡ 3 * (c ^2))
+    b^2+a^2≡3*c^2 : (b ^2 + a ^2 ≡ 3 * c ^2)
     b^2+a^2≡3*c^2 = begin
         b ^2 + a ^2
       ≡⟨ +-comm (b ^2) (a ^2) ⟩
         a ^2 + b ^2
       ≡⟨ a^2+b^2≡3c^2 ⟩
-        3 * (c ^2)
+        3 * c ^2
       ∎
 
-prop2c : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ c)
+prop2c : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * c ^2) → (3 ∣ c)
 prop2c a b c P = 3∣^2⇒3∣ 3∣c^2
   where
     9∣a^2 : 9 ∣ a ^2
@@ -259,18 +259,18 @@ prop2c a b c P = 3∣^2⇒3∣ 3∣c^2
     9∣a^2+b^2 : 9 ∣ a ^2 + b ^2
     9∣a^2+b^2 = ∣-+ 9∣a^2 9∣b^2
 
-    9∣3*c^2 : 9 ∣ 3 * (c ^2)
+    9∣3*c^2 : 9 ∣ 3 * c ^2
     9∣3*c^2 = subst (λ x → 9 ∣ x) P 9∣a^2+b^2
 
-    3∣c^2 : 3 ∣ (c ^2)
+    3∣c^2 : 3 ∣ c ^2
     3∣c^2 = /-cong 2 9∣3*c^2
 
 -- ---------------------------------------------------------------------------
 -- (iii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then a = b = c = 0.
 
 private
-  lem3 : ∀ a b c → (a * 3) ^2 + (b * 3) ^2 ≡ 3 * (c * 3) ^2 → a ^2 + b ^2 ≡ 3 * (c ^2)
-  lem3 a b c P = cancel-*-right (a ^2 + b ^2) (3 * (c ^2)) Q
+  lem3 : ∀ a b c → (a * 3) ^2 + (b * 3) ^2 ≡ 3 * (c * 3) ^2 → a ^2 + b ^2 ≡ 3 * c ^2
+  lem3 a b c P = cancel-*-right (a ^2 + b ^2) (3 * c ^2) Q
     where
       f : ∀ m n → (m * n) ^2 ≡ m ^2 * n ^2
       f m n = 
@@ -290,7 +290,7 @@ private
           m ^2 * n ^2
         ∎
   
-      Q : (a ^2 + b ^2) * 3 ^2 ≡ (3 * (c ^2)) * 3 ^2
+      Q : (a ^2 + b ^2) * 3 ^2 ≡ (3 * c ^2) * 3 ^2
       Q = begin
             (a ^2 + b ^2) * 3 ^2
           ≡⟨ distribʳ-*-+ (3 ^2) (a ^2) (b ^2) ⟩
@@ -309,8 +309,8 @@ private
 
 prop3a-step
   : ∀ a
-  → (∀ a' → (a' <′ a) → ∀ b' c' → (a' ^2 + b' ^2 ≡ 3 * (c' ^2)) → a' ≡ 0)
-  → ∀ b c → (a ^2 + b ^2 ≡ 3 * (c ^2)) → a ≡ 0
+  → (∀ a' → (a' <′ a) → ∀ b' c' → (a' ^2 + b' ^2 ≡ 3 * c' ^2) → a' ≡ 0)
+  → ∀ b c → (a ^2 + b ^2 ≡ 3 * c ^2) → a ≡ 0
 prop3a-step zero rec b c P = refl
 prop3a-step (suc n) rec b c P = body
   where
@@ -333,32 +333,32 @@ prop3a-step (suc n) rec b c P = body
         a'≡0 : a' ≡ 0
         a'≡0 = rec a' (≤⇒≤′ a'<a) b' c' P3
           where
-            P2 : (a' * 3) ^2 + (b' * 3) ^2 ≡ 3 * ((c' * 3) ^2)
+            P2 : (a' * 3) ^2 + (b' * 3) ^2 ≡ 3 * (c' * 3) ^2
             P2 rewrite (sym a≡a'*3) | (sym b≡b'*3) | (sym c≡c'*3) = P
-            P3 : a' ^2 + b' ^2 ≡ 3 * (c' ^2)
+            P3 : a' ^2 + b' ^2 ≡ 3 * c' ^2
             P3 = lem3 a' b' c' P2
             a'<a : a' < a
             a'<a = 3∣sn⇒quot<sn n (divides a' a≡a'*3)
 
-prop3a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → a ≡ 0
-prop3a a = <-rec (λ n → ∀ b c → (n ^2 + b ^2 ≡ 3 * (c ^2)) → n ≡ 0) prop3a-step a
+prop3a : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * c ^2) → a ≡ 0
+prop3a a = <-rec (λ n → ∀ b c → (n ^2 + b ^2 ≡ 3 * c ^2) → n ≡ 0) prop3a-step a
 
-prop3b : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → b ≡ 0
+prop3b : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * c ^2) → b ≡ 0
 prop3b a b c a^2+b^2≡3c^2 = prop3a b a c b^2+a^2≡3*c^2
   where
-    b^2+a^2≡3*c^2 : (b ^2 + a ^2 ≡ 3 * (c ^2))
+    b^2+a^2≡3*c^2 : b ^2 + a ^2 ≡ 3 * c ^2
     b^2+a^2≡3*c^2 = begin
         b ^2 + a ^2
       ≡⟨ +-comm (b ^2) (a ^2) ⟩
         a ^2 + b ^2
       ≡⟨ a^2+b^2≡3c^2 ⟩
-        3 * (c ^2)
+        3 * c ^2
       ∎
 
 prop3c-step
   : ∀ c
-  → (∀ c' → (c' <′ c) → ∀ a' b' → (a' ^2 + b' ^2 ≡ 3 * (c' ^2)) → c' ≡ 0)
-  → ∀ a b → (a ^2 + b ^2 ≡ 3 * (c ^2)) → c ≡ 0
+  → (∀ c' → (c' <′ c) → ∀ a' b' → (a' ^2 + b' ^2 ≡ 3 * c' ^2) → c' ≡ 0)
+  → ∀ a b → (a ^2 + b ^2 ≡ 3 * c ^2) → c ≡ 0
 prop3c-step zero rec a b P = refl
 prop3c-step (suc n) rec a b P = body
   where
@@ -381,12 +381,12 @@ prop3c-step (suc n) rec a b P = body
         c'≡0 : c' ≡ 0
         c'≡0 = rec c' (≤⇒≤′ c'<c) a' b' P3
           where
-            P2 : (a' * 3) ^2 + (b' * 3) ^2 ≡ 3 * ((c' * 3) ^2)
+            P2 : (a' * 3) ^2 + (b' * 3) ^2 ≡ 3 * (c' * 3) ^2
             P2 rewrite (sym a≡a'*3) | (sym b≡b'*3) | (sym c≡c'*3) = P
-            P3 : a' ^2 + b' ^2 ≡ 3 * (c' ^2)
+            P3 : a' ^2 + b' ^2 ≡ 3 * c' ^2
             P3 = lem3 a' b' c' P2
             c'<c : c' < c
             c'<c = 3∣sn⇒quot<sn n (divides c' c≡c'*3)
 
-prop3c : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → c ≡ 0
+prop3c : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * c ^2) → c ≡ 0
 prop3c a b c = <-rec (λ n → ∀ a₁ b₁ → a₁ ^2 + b₁ ^2 ≡ 3 * n ^2 → n ≡ 0) prop3c-step c a b
