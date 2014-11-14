@@ -131,11 +131,9 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
 ∣⇒²∣² : ∀ {a n} → (suc n ∣ a) → ((suc n) ² ∣ a ²)
 ∣⇒²∣² {a} {n} 1+n∣a = *∣* 1+n∣a 1+n∣a
 
-s<s*3 : ∀ m → suc m < suc m * 3
-s<s*3 m = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
+s<s*ss : ∀ m n → suc m < suc m * suc (suc n)
+s<s*ss m n = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
   where
-    n = 1
-
     2+m≤2+m : 2 + m ≤ 2 + m
     2+m≤2+m = ≤′⇒≤ ≤′-refl
 
@@ -175,7 +173,7 @@ s<s*3 m = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
 3∣sn⇒quot<sn n (divides (suc m) sn≡sm*3) = subst (λ x → suc m < x) (sym sn≡sm*3) P
   where
     P : suc m < suc m * 3
-    P = s<s*3 m
+    P = s<s*ss m 1
 
 -- ---------------------------------------------------------------------------
 -- (i) For any a ∈ N, (a^2 mod 3) = 0 or (a^2 mod 3) = 1.
