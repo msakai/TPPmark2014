@@ -23,6 +23,7 @@ open import Induction.Nat
 open ≡-Reasoning
 
 -- ---------------------------------------------------------------------------
+-- Basic arithmetic lemma
 
 distribˡ-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
 distribˡ-*-+ m n o =
@@ -44,95 +45,9 @@ distribˡ-*-+ m n o =
 *-right-identity : ∀ n → n * 1 ≡ n
 *-right-identity n = trans (*-comm n 1) (*-left-identity n)
 
-mod-dist-+ : ∀ a b → (a + b) mod 3 ≡ (toℕ (a mod 3) + toℕ (b mod 3)) mod 3
-mod-dist-+ a b = {!!}
-
-mod-dist-* : ∀ a b → (a * b) mod 3 ≡ (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
-mod-dist-* a b = {!!}
-
-_² : ℕ → ℕ
-_² n = n * n
-
-distrib-²-* : ∀ m n → (m * n) ² ≡ m ² * n ²
-distrib-²-* m n =
-  begin
-    (m * n) ²
-  ≡⟨ refl ⟩
-    (m * n) * (m * n)
-  ≡⟨ *-assoc m n (m * n) ⟩
-    m * (n * (m * n))
-  ≡⟨ cong (λ x → m * x) (*-comm n (m * n)) ⟩
-    m * ((m * n) * n)
-  ≡⟨ cong (λ x → m * x) (*-assoc m n n) ⟩
-    m * (m * (n * n))
-  ≡⟨ sym (*-assoc m m (n * n)) ⟩
-    (m * m) * (n * n)
-  ≡⟨ refl ⟩
-    m ² * n ²
-  ∎
-
-rem≡0⇒∣ : ∀ {a n} → (a mod (suc n) ≡ Fin.zero) → (suc n ∣ a)
-rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
-      a
-    ≡⟨ DivMod.property (a divMod m) ⟩
-      toℕ (a mod m) + (a div m) * m
-    ≡⟨ cong (λ x → toℕ x + (a div m) * m) P ⟩
-      toℕ (Fin.zero {n}) + (a div m) * m
-    ≡⟨ refl ⟩
-      (a div m) * m
-    ∎
-  where
-    m = suc n
-
--- TODO: 3が素数であることを利用して証明したいが、面倒なので a mod 3 と b mod 3 による場合分けで力技で証明する方針で
-3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
-3∣*-split a b (divides q a*b≡q*3) = {!!}
-  where
-    P : (toℕ (a mod 3) * toℕ (b mod 3)) mod 3 ≡ Fin.zero
-    P = begin
-          (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
-        ≡⟨ sym (mod-dist-* a b) ⟩
-          (a * b) mod 3
-        ≡⟨ cong (λ x → x mod 3) a*b≡q*3 ⟩
-          (q * 3) mod 3
-        ≡⟨ cong (λ x → x mod 3) (*-comm q 3) ⟩
-          (3 * q) mod 3
-        ≡⟨ mod-dist-* 3 q ⟩
-          Fin.zero
-        ∎
-
-3∣²⇒3∣ : ∀ {a} → (3 ∣ a ²) → (3 ∣ a)
-3∣²⇒3∣ {a} P with 3∣*-split a a P
-... | inj₁ p = p
-... | inj₂ p = p
-
-*∣* : ∀ {a₁ n₁ a₂ n₂} → (suc n₁ ∣ a₁) → (suc n₂ ∣ a₂) → (suc n₁ * suc n₂ ∣ a₁ * a₂)
-*∣* {a₁} {n₁} {a₂} {n₂} (divides q₁ a₁≡q₁*m₁) (divides q₂ a₂≡q₂*m₂) = divides (q₁ * q₂) $ begin
-      a₁ * a₂
-    ≡⟨ cong (λ x → x * a₂) a₁≡q₁*m₁ ⟩
-      (q₁ * m₁) * a₂
-    ≡⟨ cong (λ x → (q₁ * m₁) * x) a₂≡q₂*m₂ ⟩
-      (q₁ * m₁) * (q₂ * m₂)
-    ≡⟨ sym (*-assoc (q₁ * m₁) q₂ m₂) ⟩
-      ((q₁ * m₁) * q₂) * m₂
-    ≡⟨ cong (λ x → x * m₂) (*-assoc q₁ m₁ q₂) ⟩
-      (q₁ * (m₁ * q₂)) * m₂
-    ≡⟨ cong (λ x → (q₁ * x) * m₂) (*-comm m₁ q₂) ⟩
-      (q₁ * (q₂ * m₁)) * m₂
-    ≡⟨ cong (λ x → x * m₂) (sym (*-assoc q₁ q₂ m₁)) ⟩
-      ((q₁ * q₂) * m₁) * m₂
-    ≡⟨ *-assoc (q₁ * q₂) m₁ m₂ ⟩
-      (q₁ * q₂) * (m₁ * m₂)
-    ∎
-  where
-    m₁ = suc n₁
-    m₂ = suc n₂
-
-∣⇒²∣² : ∀ {a n} → (suc n ∣ a) → ((suc n) ² ∣ a ²)
-∣⇒²∣² {a} {n} 1+n∣a = *∣* 1+n∣a 1+n∣a
-
-s<s*ss : ∀ m n → suc m < suc m * suc (suc n)
-s<s*ss m n = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
+-- m≥1 ∧ n≥2 ⇒ m<n*m
+s<ss*s : ∀ m n → suc m < suc (suc n) * suc m
+s<ss*s m n = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
   where
     2+m≤2+m : 2 + m ≤ 2 + m
     2+m≤2+m = ≤′⇒≤ ≤′-refl
@@ -167,6 +82,102 @@ s<s*ss m n = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
 
     P : 1 + m < (2 + n) * (1 + m)
     P = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
+
+s<s*ss : ∀ m n → suc m < suc m * suc (suc n)
+s<s*ss m n rewrite (*-comm (1 + m) (2 + n)) = s<ss*s m n
+
+-- ---------------------------------------------------------------------------
+-- Definition of _² and its properties
+
+_² : ℕ → ℕ
+_² n = n * n
+
+distrib-²-* : ∀ m n → (m * n) ² ≡ m ² * n ²
+distrib-²-* m n =
+  begin
+    (m * n) ²
+  ≡⟨ refl ⟩
+    (m * n) * (m * n)
+  ≡⟨ *-assoc m n (m * n) ⟩
+    m * (n * (m * n))
+  ≡⟨ cong (λ x → m * x) (*-comm n (m * n)) ⟩
+    m * ((m * n) * n)
+  ≡⟨ cong (λ x → m * x) (*-assoc m n n) ⟩
+    m * (m * (n * n))
+  ≡⟨ sym (*-assoc m m (n * n)) ⟩
+    (m * m) * (n * n)
+  ≡⟨ refl ⟩
+    m ² * n ²
+  ∎
+
+-- ---------------------------------------------------------------------------
+-- Some lemmas on divisibility and modulo arithmetic
+
+rem≡0⇒∣ : ∀ {a n} → (a mod (suc n) ≡ Fin.zero) → (suc n ∣ a)
+rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
+      a
+    ≡⟨ DivMod.property (a divMod m) ⟩
+      toℕ (a mod m) + (a div m) * m
+    ≡⟨ cong (λ x → toℕ x + (a div m) * m) P ⟩
+      toℕ (Fin.zero {n}) + (a div m) * m
+    ≡⟨ refl ⟩
+      (a div m) * m
+    ∎
+  where
+    m = suc n
+
+*∣* : ∀ {a₁ n₁ a₂ n₂} → (suc n₁ ∣ a₁) → (suc n₂ ∣ a₂) → (suc n₁ * suc n₂ ∣ a₁ * a₂)
+*∣* {a₁} {n₁} {a₂} {n₂} (divides q₁ a₁≡q₁*m₁) (divides q₂ a₂≡q₂*m₂) = divides (q₁ * q₂) $ begin
+      a₁ * a₂
+    ≡⟨ cong (λ x → x * a₂) a₁≡q₁*m₁ ⟩
+      (q₁ * m₁) * a₂
+    ≡⟨ cong (λ x → (q₁ * m₁) * x) a₂≡q₂*m₂ ⟩
+      (q₁ * m₁) * (q₂ * m₂)
+    ≡⟨ sym (*-assoc (q₁ * m₁) q₂ m₂) ⟩
+      ((q₁ * m₁) * q₂) * m₂
+    ≡⟨ cong (λ x → x * m₂) (*-assoc q₁ m₁ q₂) ⟩
+      (q₁ * (m₁ * q₂)) * m₂
+    ≡⟨ cong (λ x → (q₁ * x) * m₂) (*-comm m₁ q₂) ⟩
+      (q₁ * (q₂ * m₁)) * m₂
+    ≡⟨ cong (λ x → x * m₂) (sym (*-assoc q₁ q₂ m₁)) ⟩
+      ((q₁ * q₂) * m₁) * m₂
+    ≡⟨ *-assoc (q₁ * q₂) m₁ m₂ ⟩
+      (q₁ * q₂) * (m₁ * m₂)
+    ∎
+  where
+    m₁ = suc n₁
+    m₂ = suc n₂
+
+∣⇒²∣² : ∀ {a n} → (suc n ∣ a) → ((suc n) ² ∣ a ²)
+∣⇒²∣² {a} {n} 1+n∣a = *∣* 1+n∣a 1+n∣a
+
+mod-dist-+ : ∀ a b → (a + b) mod 3 ≡ (toℕ (a mod 3) + toℕ (b mod 3)) mod 3
+mod-dist-+ a b = {!!}
+
+mod-dist-* : ∀ a b → (a * b) mod 3 ≡ (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
+mod-dist-* a b = {!!}
+
+-- TODO: 3が素数であることを利用して証明したいが、面倒なので a mod 3 と b mod 3 による場合分けで力技で証明する方針で
+3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
+3∣*-split a b (divides q a*b≡q*3) = {!!}
+  where
+    P : (toℕ (a mod 3) * toℕ (b mod 3)) mod 3 ≡ Fin.zero
+    P = begin
+          (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
+        ≡⟨ sym (mod-dist-* a b) ⟩
+          (a * b) mod 3
+        ≡⟨ cong (λ x → x mod 3) a*b≡q*3 ⟩
+          (q * 3) mod 3
+        ≡⟨ cong (λ x → x mod 3) (*-comm q 3) ⟩
+          (3 * q) mod 3
+        ≡⟨ mod-dist-* 3 q ⟩
+          Fin.zero
+        ∎
+
+3∣²⇒3∣ : ∀ {a} → (3 ∣ a ²) → (3 ∣ a)
+3∣²⇒3∣ {a} P with 3∣*-split a a P
+... | inj₁ p = p
+... | inj₂ p = p
 
 3∣sn⇒quot<sn : ∀ {n} → (3∣sn : 3 ∣ suc n) → (quotient 3∣sn < suc n)
 3∣sn⇒quot<sn {n} (divides zero ())
