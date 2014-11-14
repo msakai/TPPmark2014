@@ -186,70 +186,65 @@ prop1 a rewrite mod-dist-* a a with a mod 3
 ... | (Fin.suc (Fin.suc (Fin.suc ())))
 
 -- ---------------------------------------------------------------------------
-
-private
-  lem1 : ∀ a b c → a ² + b ² ≡ 3 * c ²
-      → (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3 ≡ Fin.zero
-  lem1 a b c P = begin
-      (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
-        ≡⟨ sym (mod-dist-+ (a ²) (b ²)) ⟩
-      (a ² + b ²) mod 3
-        ≡⟨ cong (λ x → x mod 3) P ⟩
-      (3 * c ²) mod 3
-        ≡⟨ mod-dist-* 3 (c ²) ⟩
-      Fin.zero
-        ∎
-  
-  lem2 : ∀ a b c → a ² + b ² ≡ 3 * c ² → a ² mod 3 ≡ Fin.zero
-  lem2 a b c P with prop1 a
-  ... | inj₁ p = p
-  ... | inj₂ p with prop1 b
-  ...     | inj₁ q = ⊥-elim (1≢0 1≡0)
-              where
-                1≢0 : ¬ Fin.suc Fin.zero ≡ Fin.zero {2}
-                1≢0 ()
-  
-                1≡0 : Fin.suc Fin.zero ≡ Fin.zero {2}
-                1≡0 =
-                  begin
-                    Fin.suc Fin.zero
-                  ≡⟨ refl ⟩
-                    (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.zero {2})) mod 3
-                  ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.zero {2})) mod 3) (sym p) ⟩
-                    (toℕ (a ² mod 3) + toℕ (Fin.zero {2})) mod 3
-                  ≡⟨ cong (λ x → (toℕ (a ² mod 3) + toℕ x) mod 3) (sym q) ⟩
-                    (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
-                  ≡⟨ lem1 a b c P ⟩
-                    Fin.zero
-                  ∎
-  ...     | inj₂ q = ⊥-elim (2≢0 2≡0)
-              where
-                2≢0 : ¬ Fin.suc (Fin.suc Fin.zero) ≡ Fin.zero {2}
-                2≢0 ()
-  
-                2≡0 : Fin.suc (Fin.suc Fin.zero) ≡ Fin.zero {2}
-                2≡0 =
-                  begin
-                    Fin.suc (Fin.suc (Fin.zero {0}))
-                  ≡⟨ refl ⟩
-                    (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
-                  ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.suc (Fin.zero {1}))) mod 3) (sym p) ⟩
-                    (toℕ (a ² mod 3) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
-                  ≡⟨ cong (λ x → (toℕ (a ² mod 3) + toℕ x) mod 3) (sym q) ⟩
-                    (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
-                  ≡⟨ lem1 a b c P ⟩
-                    Fin.zero
-                  ∎
-
 -- (ii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then (3 | a), (3 | b) and (3 | c).
+
 prop2a : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ a)
 prop2a a b c a²+b²≡3c² = 3∣²⇒3∣ 3∣a²
   where
-    lem : a ² mod 3 ≡ Fin.zero
-    lem = lem2 a b c a²+b²≡3c²
+    lem1 : (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3 ≡ Fin.zero
+    lem1 = begin
+        (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
+          ≡⟨ sym (mod-dist-+ (a ²) (b ²)) ⟩
+        (a ² + b ²) mod 3
+          ≡⟨ cong (λ x → x mod 3) a²+b²≡3c² ⟩
+        (3 * c ²) mod 3
+          ≡⟨ mod-dist-* 3 (c ²) ⟩
+        Fin.zero
+          ∎
+    
+    a²mod3≡0 : a ² mod 3 ≡ Fin.zero
+    a²mod3≡0 with prop1 a
+    ... | inj₁ p = p
+    ... | inj₂ p with prop1 b
+    ...     | inj₁ q = ⊥-elim (1≢0 1≡0)
+                where
+                  1≢0 : ¬ Fin.suc Fin.zero ≡ Fin.zero {2}
+                  1≢0 ()
+    
+                  1≡0 : Fin.suc Fin.zero ≡ Fin.zero {2}
+                  1≡0 =
+                    begin
+                      Fin.suc Fin.zero
+                    ≡⟨ refl ⟩
+                      (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.zero {2})) mod 3
+                    ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.zero {2})) mod 3) (sym p) ⟩
+                      (toℕ (a ² mod 3) + toℕ (Fin.zero {2})) mod 3
+                    ≡⟨ cong (λ x → (toℕ (a ² mod 3) + toℕ x) mod 3) (sym q) ⟩
+                      (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
+                    ≡⟨ lem1 ⟩
+                      Fin.zero
+                    ∎
+    ...     | inj₂ q = ⊥-elim (2≢0 2≡0)
+                where
+                  2≢0 : ¬ Fin.suc (Fin.suc Fin.zero) ≡ Fin.zero {2}
+                  2≢0 ()
+    
+                  2≡0 : Fin.suc (Fin.suc Fin.zero) ≡ Fin.zero {2}
+                  2≡0 =
+                    begin
+                      Fin.suc (Fin.suc (Fin.zero {0}))
+                    ≡⟨ refl ⟩
+                      (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
+                    ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.suc (Fin.zero {1}))) mod 3) (sym p) ⟩
+                      (toℕ (a ² mod 3) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
+                    ≡⟨ cong (λ x → (toℕ (a ² mod 3) + toℕ x) mod 3) (sym q) ⟩
+                      (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
+                    ≡⟨ lem1 ⟩
+                      Fin.zero
+                    ∎
 
     3∣a² : 3 ∣ a ²
-    3∣a² = rem≡0⇒∣ lem
+    3∣a² = rem≡0⇒∣ a²mod3≡0
 
 prop2b : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ b)
 prop2b a b c a²+b²≡3c² = prop2a b a c b²+a²≡3*c²
