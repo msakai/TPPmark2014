@@ -53,16 +53,18 @@ mod-dist-* a b = {!!}
 _^2 : ℕ → ℕ
 _^2 n = n * n
 
-quot≡0⇒3∣ : ∀ {a} → (a mod 3 ≡ Fin.zero) → (3 ∣ a)
-quot≡0⇒3∣ {a} P = divides (a div 3) $ begin
+quot≡0⇒∣ : ∀ {a n} → (a mod (suc n) ≡ Fin.zero) → (suc n ∣ a)
+quot≡0⇒∣ {a} {n} P = divides (a div m) $ begin
       a
-    ≡⟨ DivMod.property (a divMod 3) ⟩
-      toℕ (a mod 3) + (a div 3) * 3
-    ≡⟨ cong (λ x → toℕ x + (a div 3) * 3) P ⟩
-      toℕ (Fin.zero {2}) + (a div 3) * 3
+    ≡⟨ DivMod.property (a divMod m) ⟩
+      toℕ (a mod m) + (a div m) * m
+    ≡⟨ cong (λ x → toℕ x + (a div m) * m) P ⟩
+      toℕ (Fin.zero {n}) + (a div m) * m
     ≡⟨ refl ⟩
-      (a div 3) * 3
+      (a div m) * m
     ∎
+  where
+    m = suc n
 
 -- TODO: 3が素数であることを利用して証明したいが、面倒なので a mod 3 と b mod 3 による場合分けで力技で証明する方針で
 3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
@@ -86,29 +88,30 @@ quot≡0⇒3∣ {a} P = divides (a div 3) $ begin
 ... | inj₁ p = p
 ... | inj₂ p = p
 
-3∣⇒9∣^2 : ∀ {a} → (3 ∣ a) → (9 ∣ a ^2)
-3∣⇒9∣^2 {a} (divides q P) = divides (q * q) $ begin
-    a ^2
-  ≡⟨ cong (λ x → x ^2) P ⟩
-    (q * 3) ^2
-  ≡⟨ refl ⟩
-    (q * 3) * (q * 3)
-  ≡⟨ refl ⟩
-    (q * 3) * (q * 3)
-  ≡⟨ sym (*-assoc (q * 3) q 3) ⟩
-    ((q * 3) * q) * 3
-  ≡⟨ cong (λ x → x * 3) (*-assoc q 3 q) ⟩
-    (q * (3 * q)) * 3
-  ≡⟨ cong (λ x → (q * x) * 3) (*-comm 3 q) ⟩
-    (q * (q * 3)) * 3
-  ≡⟨ cong (λ x → x * 3) (sym (*-assoc q q 3)) ⟩
-    ((q * q) * 3) * 3
-  ≡⟨ *-assoc (q * q) 3 3 ⟩
-    (q * q) * (3 * 3)
-  ≡⟨ refl ⟩
-    q * q * 9
-  ∎
+*∣* : ∀ {a₁ n₁ a₂ n₂} → (suc n₁ ∣ a₁) → (suc n₂ ∣ a₂) → (suc n₁ * suc n₂ ∣ a₁ * a₂)
+*∣* {a₁} {n₁} {a₂} {n₂} (divides q₁ a₁≡q₁*m₁) (divides q₂ a₂≡q₂*m₂) = divides (q₁ * q₂) $ begin
+      a₁ * a₂
+    ≡⟨ cong (λ x → x * a₂) a₁≡q₁*m₁ ⟩
+      (q₁ * m₁) * a₂
+    ≡⟨ cong (λ x → (q₁ * m₁) * x) a₂≡q₂*m₂ ⟩
+      (q₁ * m₁) * (q₂ * m₂)
+    ≡⟨ sym (*-assoc (q₁ * m₁) q₂ m₂) ⟩
+      ((q₁ * m₁) * q₂) * m₂
+    ≡⟨ cong (λ x → x * m₂) (*-assoc q₁ m₁ q₂) ⟩
+      (q₁ * (m₁ * q₂)) * m₂
+    ≡⟨ cong (λ x → (q₁ * x) * m₂) (*-comm m₁ q₂) ⟩
+      (q₁ * (q₂ * m₁)) * m₂
+    ≡⟨ cong (λ x → x * m₂) (sym (*-assoc q₁ q₂ m₁)) ⟩
+      ((q₁ * q₂) * m₁) * m₂
+    ≡⟨ *-assoc (q₁ * q₂) m₁ m₂ ⟩
+      (q₁ * q₂) * (m₁ * m₂)
+    ∎
+  where
+    m₁ = suc n₁
+    m₂ = suc n₂
 
+∣⇒^2∣^2 : ∀ {a n} → (suc n ∣ a) → ((suc n) ^2 ∣ a ^2)
+∣⇒^2∣^2 {a} {n} 1+n∣a = *∣* 1+n∣a 1+n∣a
 
 s<s*3 : ∀ m → suc m < suc m * 3
 s<s*3 m = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
@@ -230,7 +233,7 @@ prop2a a b c a^2+b^2≡3c^2 = 3∣^2⇒3∣ 3∣a^2
     lem = lem2 a b c a^2+b^2≡3c^2
 
     3∣a^2 : 3 ∣ a ^2
-    3∣a^2 = quot≡0⇒3∣ lem
+    3∣a^2 = quot≡0⇒∣ lem
 
 prop2b : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ b)
 prop2b a b c a^2+b^2≡3c^2 = prop2a b a c b^2+a^2≡3*c^2
@@ -248,10 +251,10 @@ prop2c : ∀ (a b c : ℕ) → (a ^2 + b ^2 ≡ 3 * (c ^2)) → (3 ∣ c)
 prop2c a b c P = 3∣^2⇒3∣ 3∣c^2
   where
     9∣a^2 : 9 ∣ a ^2
-    9∣a^2 = 3∣⇒9∣^2 (prop2a a b c P)
+    9∣a^2 = ∣⇒^2∣^2 (prop2a a b c P)
 
     9∣b^2 : 9 ∣ b ^2
-    9∣b^2 = 3∣⇒9∣^2 (prop2b a b c P)
+    9∣b^2 = ∣⇒^2∣^2 (prop2b a b c P)
 
     9∣a^2+b^2 : 9 ∣ a ^2 + b ^2
     9∣a^2+b^2 = ∣-+ 9∣a^2 9∣b^2
