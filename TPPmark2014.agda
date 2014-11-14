@@ -53,6 +53,24 @@ mod-dist-* a b = {!!}
 _² : ℕ → ℕ
 _² n = n * n
 
+distrib-²-* : ∀ m n → (m * n) ² ≡ m ² * n ²
+distrib-²-* m n =
+  begin
+    (m * n) ²
+  ≡⟨ refl ⟩
+    (m * n) * (m * n)
+  ≡⟨ *-assoc m n (m * n) ⟩
+    m * (n * (m * n))
+  ≡⟨ cong (λ x → m * x) (*-comm n (m * n)) ⟩
+    m * ((m * n) * n)
+  ≡⟨ cong (λ x → m * x) (*-assoc m n n) ⟩
+    m * (m * (n * n))
+  ≡⟨ sym (*-assoc m m (n * n)) ⟩
+    (m * m) * (n * n)
+  ≡⟨ refl ⟩
+    m ² * n ²
+  ∎
+
 rem≡0⇒∣ : ∀ {a n} → (a mod (suc n) ≡ Fin.zero) → (suc n ∣ a)
 rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
       a
@@ -271,37 +289,19 @@ prop2c a b c P = 3∣²⇒3∣ 3∣c²
 private
   lem3 : ∀ a b c → (a * 3) ² + (b * 3) ² ≡ 3 * (c * 3) ² → a ² + b ² ≡ 3 * c ²
   lem3 a b c P = cancel-*-right (a ² + b ²) (3 * c ²) Q
-    where
-      f : ∀ m n → (m * n) ² ≡ m ² * n ²
-      f m n = 
-        begin
-          (m * n) ²
-        ≡⟨ refl ⟩
-          (m * n) * (m * n)
-        ≡⟨ *-assoc m n (m * n) ⟩
-          m * (n * (m * n))
-        ≡⟨ cong (λ x → m * x) (*-comm n (m * n)) ⟩
-          m * ((m * n) * n)
-        ≡⟨ cong (λ x → m * x) (*-assoc m n n) ⟩
-          m * (m * (n * n))
-        ≡⟨ sym (*-assoc m m (n * n)) ⟩
-          (m * m) * (n * n)
-        ≡⟨ refl ⟩
-          m ² * n ²
-        ∎
-  
+    where  
       Q : (a ² + b ²) * 3 ² ≡ (3 * c ²) * 3 ²
       Q = begin
             (a ² + b ²) * 3 ²
           ≡⟨ distribʳ-*-+ (3 ²) (a ²) (b ²) ⟩
             a ² * 3 ² + b ² * 3 ²
-          ≡⟨ cong (λ x → x + b ² * 3 ²) (sym (f a 3)) ⟩
+          ≡⟨ cong (λ x → x + b ² * 3 ²) (sym (distrib-²-* a 3)) ⟩
             (a * 3) ² + b ² * 3 ²
-          ≡⟨ cong (λ x → (a * 3) ² + x) (sym (f b 3)) ⟩
+          ≡⟨ cong (λ x → (a * 3) ² + x) (sym (distrib-²-* b 3)) ⟩
             (a * 3) ² + (b * 3) ²
           ≡⟨ P ⟩
             3 * (c * 3) ²
-          ≡⟨ cong (λ x → 3 * x) (f c 3) ⟩
+          ≡⟨ cong (λ x → 3 * x) (distrib-²-* c 3) ⟩
             3 * (c ² * 3 ²)
           ≡⟨ sym (*-assoc 3 (c ²) (3 ²)) ⟩
             (3 * c ²) * 3 ²
