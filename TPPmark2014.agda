@@ -44,10 +44,10 @@ distribˡ-*-+ m n o =
 *-right-identity : ∀ n → n * 1 ≡ n
 *-right-identity n = trans (*-comm n 1) (*-left-identity n)
 
-mod-dist-+ : ∀ (a b : ℕ) → (a + b) mod 3 ≡ (toℕ (a mod 3) + toℕ (b mod 3)) mod 3
+mod-dist-+ : ∀ a b → (a + b) mod 3 ≡ (toℕ (a mod 3) + toℕ (b mod 3)) mod 3
 mod-dist-+ a b = {!!}
 
-mod-dist-* : ∀ (a b : ℕ) → (a * b) mod 3 ≡ (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
+mod-dist-* : ∀ a b → (a * b) mod 3 ≡ (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
 mod-dist-* a b = {!!}
 
 _² : ℕ → ℕ
@@ -168,9 +168,9 @@ s<s*ss m n = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
     P : 1 + m < (2 + n) * (1 + m)
     P = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
 
-3∣sn⇒quot<sn : ∀ n → (3∣sn : 3 ∣ suc n) → quotient 3∣sn < suc n
-3∣sn⇒quot<sn n (divides zero ())
-3∣sn⇒quot<sn n (divides (suc m) sn≡sm*3) = subst (λ x → suc m < x) (sym sn≡sm*3) P
+3∣sn⇒quot<sn : ∀ {n} → (3∣sn : 3 ∣ suc n) → (quotient 3∣sn < suc n)
+3∣sn⇒quot<sn {n} (divides zero ())
+3∣sn⇒quot<sn {n} (divides (suc m) sn≡sm*3) = subst (λ x → suc m < x) (sym sn≡sm*3) P
   where
     P : suc m < suc m * 3
     P = s<s*ss m 1
@@ -178,7 +178,7 @@ s<s*ss m n = subst (λ x → 1 + m < x) (*-comm (2 + n) (1 + m)) P
 -- ---------------------------------------------------------------------------
 -- (i) For any a ∈ N, (a^2 mod 3) = 0 or (a^2 mod 3) = 1.
 
-prop1 : ∀ (a : ℕ) → a ² mod 3 ≡ Fin.zero ⊎ a ² mod 3 ≡ Fin.suc (Fin.zero)
+prop1 : ∀ a → (a ² mod 3 ≡ Fin.zero) ⊎ (a ² mod 3 ≡ Fin.suc (Fin.zero))
 prop1 a rewrite mod-dist-* a a with a mod 3
 ... | Fin.zero = inj₁ refl
 ... | (Fin.suc Fin.zero) = inj₂ refl
@@ -194,7 +194,7 @@ private
       (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
         ≡⟨ sym (mod-dist-+ (a ²) (b ²)) ⟩
       (a ² + b ²) mod 3
-        ≡⟨ cong (λ (n : ℕ) → n mod 3) P ⟩
+        ≡⟨ cong (λ x → x mod 3) P ⟩
       (3 * c ²) mod 3
         ≡⟨ mod-dist-* 3 (c ²) ⟩
       Fin.zero
@@ -242,7 +242,7 @@ private
                   ∎
 
 -- (ii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then (3 | a), (3 | b) and (3 | c).
-prop2a : ∀ (a b c : ℕ) → (a ² + b ² ≡ 3 * c ²) → (3 ∣ a)
+prop2a : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ a)
 prop2a a b c a²+b²≡3c² = 3∣²⇒3∣ 3∣a²
   where
     lem : a ² mod 3 ≡ Fin.zero
@@ -251,7 +251,7 @@ prop2a a b c a²+b²≡3c² = 3∣²⇒3∣ 3∣a²
     3∣a² : 3 ∣ a ²
     3∣a² = rem≡0⇒∣ lem
 
-prop2b : ∀ (a b c : ℕ) → (a ² + b ² ≡ 3 * c ²) → (3 ∣ b)
+prop2b : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ b)
 prop2b a b c a²+b²≡3c² = prop2a b a c b²+a²≡3*c²
   where
     b²+a²≡3*c² : (b ² + a ² ≡ 3 * c ²)
@@ -263,7 +263,7 @@ prop2b a b c a²+b²≡3c² = prop2a b a c b²+a²≡3*c²
         3 * c ²
       ∎
 
-prop2c : ∀ (a b c : ℕ) → (a ² + b ² ≡ 3 * c ²) → (3 ∣ c)
+prop2c : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ c)
 prop2c a b c P = 3∣²⇒3∣ 3∣c²
   where
     9∣a² : 9 ∣ a ²
@@ -336,12 +336,12 @@ prop3a-step (suc n) rec b c P = body
             P3 : a' ² + b' ² ≡ 3 * c' ²
             P3 = lem3 a' b' c' P2
             a'<a : a' < a
-            a'<a = 3∣sn⇒quot<sn n (divides a' a≡a'*3)
+            a'<a = 3∣sn⇒quot<sn (divides a' a≡a'*3)
 
-prop3a : ∀ (a b c : ℕ) → (a ² + b ² ≡ 3 * c ²) → a ≡ 0
+prop3a : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → a ≡ 0
 prop3a a = <-rec (λ n → ∀ b c → (n ² + b ² ≡ 3 * c ²) → n ≡ 0) prop3a-step a
 
-prop3b : ∀ (a b c : ℕ) → (a ² + b ² ≡ 3 * c ²) → b ≡ 0
+prop3b : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → b ≡ 0
 prop3b a b c a²+b²≡3c² = prop3a b a c b²+a²≡3*c²
   where
     b²+a²≡3*c² : b ² + a ² ≡ 3 * c ²
@@ -384,7 +384,7 @@ prop3c-step (suc n) rec a b P = body
             P3 : a' ² + b' ² ≡ 3 * c' ²
             P3 = lem3 a' b' c' P2
             c'<c : c' < c
-            c'<c = 3∣sn⇒quot<sn n (divides c' c≡c'*3)
+            c'<c = 3∣sn⇒quot<sn (divides c' c≡c'*3)
 
-prop3c : ∀ (a b c : ℕ) → (a ² + b ² ≡ 3 * c ²) → c ≡ 0
+prop3c : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → c ≡ 0
 prop3c a b c = <-rec (λ n → ∀ a₁ b₁ → a₁ ² + b₁ ² ≡ 3 * n ² → n ≡ 0) prop3c-step c a b
