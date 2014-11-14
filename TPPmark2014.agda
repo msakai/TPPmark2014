@@ -151,6 +151,11 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
 ∣⇒²∣² : ∀ {a n} → (suc n ∣ a) → ((suc n) ² ∣ a ²)
 ∣⇒²∣² {a} {n} 1+n∣a = *∣* 1+n∣a 1+n∣a
 
+-- m≥2 ∧ n≥1 ∧ m∣n ⇒ n div m < n
+2+m∣1+n⇒quot<1+n : ∀ {m} {n} → (2+m∣1+n : 2 + m ∣ 1 + n) → (quotient 2+m∣1+n < 1 + n)
+2+m∣1+n⇒quot<1+n {m} {n} (divides zero ())
+2+m∣1+n⇒quot<1+n {m} {n} (divides (suc o) sn≡so*ssm) rewrite sn≡so*ssm = s<s*ss o m
+
 mod-dist-+ : ∀ a b → (a + b) mod 3 ≡ (toℕ (a mod 3) + toℕ (b mod 3)) mod 3
 mod-dist-+ a b = {!!}
 
@@ -178,13 +183,6 @@ mod-dist-* a b = {!!}
 3∣²⇒3∣ {a} P with 3∣*-split a a P
 ... | inj₁ p = p
 ... | inj₂ p = p
-
-3∣sn⇒quot<sn : ∀ {n} → (3∣sn : 3 ∣ suc n) → (quotient 3∣sn < suc n)
-3∣sn⇒quot<sn {n} (divides zero ())
-3∣sn⇒quot<sn {n} (divides (suc m) sn≡sm*3) = subst (λ x → suc m < x) (sym sn≡sm*3) P
-  where
-    P : suc m < suc m * 3
-    P = s<s*ss m 1
 
 -- ---------------------------------------------------------------------------
 -- (i) For any a ∈ N, (a^2 mod 3) = 0 or (a^2 mod 3) = 1.
@@ -342,7 +340,7 @@ prop3a-step (suc n) rec b c P = body
             P3 : a' ² + b' ² ≡ 3 * c' ²
             P3 = lem3 a' b' c' P2
             a'<a : a' < a
-            a'<a = 3∣sn⇒quot<sn (divides a' a≡a'*3)
+            a'<a = 2+m∣1+n⇒quot<1+n (divides a' a≡a'*3)
 
 prop3a : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → a ≡ 0
 prop3a a = <-rec (λ n → ∀ b c → (n ² + b ² ≡ 3 * c ²) → n ≡ 0) prop3a-step a
@@ -390,7 +388,7 @@ prop3c-step (suc n) rec a b P = body
             P3 : a' ² + b' ² ≡ 3 * c' ²
             P3 = lem3 a' b' c' P2
             c'<c : c' < c
-            c'<c = 3∣sn⇒quot<sn (divides c' c≡c'*3)
+            c'<c = 2+m∣1+n⇒quot<1+n (divides c' c≡c'*3)
 
 prop3c : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → c ≡ 0
 prop3c a b c = <-rec (λ n → ∀ a₁ b₁ → a₁ ² + b₁ ² ≡ 3 * n ² → n ≡ 0) prop3c-step c a b
