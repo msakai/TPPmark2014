@@ -20,7 +20,6 @@ open import Relation.Nullary
 open import Relation.Nullary.Decidable
 open import Function
 open import Induction.Nat
-open ≡-Reasoning
 
 -- ---------------------------------------------------------------------------
 -- Basic arithmetic lemma
@@ -38,6 +37,8 @@ distribˡ-*-+ m n o =
   ≡⟨  cong (λ x → m * n + x) (*-comm o m) ⟩
     m * n + m * o
   ∎
+  where
+    open ≡-Reasoning
 
 *-left-identity : ∀ n → 1 * n ≡ n
 *-left-identity n = +-right-identity n
@@ -49,6 +50,8 @@ distribˡ-*-+ m n o =
 s<ss*s : ∀ m n → suc m < suc (suc n) * suc m
 s<ss*s m n = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
   where
+    open ≡-Reasoning
+
     2+m≤2+m : 2 + m ≤ 2 + m
     2+m≤2+m = ≤′⇒≤ ≤′-refl
 
@@ -109,6 +112,8 @@ distrib-²-* m n =
   ≡⟨ refl ⟩
     m ² * n ²
   ∎
+  where
+    open ≡-Reasoning
 
 -- ---------------------------------------------------------------------------
 -- Some lemmas on divisibility and modulo arithmetic
@@ -124,6 +129,7 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
       (a div m) * m
     ∎
   where
+    open ≡-Reasoning
     m = suc n
 
 *∣* : ∀ {a₁ n₁ a₂ n₂} → (suc n₁ ∣ a₁) → (suc n₂ ∣ a₂) → (suc n₁ * suc n₂ ∣ a₁ * a₂)
@@ -145,6 +151,7 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
       (q₁ * q₂) * (m₁ * m₂)
     ∎
   where
+    open ≡-Reasoning
     m₁ = suc n₁
     m₂ = suc n₂
 
@@ -162,6 +169,7 @@ mod-uniq {n} r1 r2 q1 q2 P = {!!}
 mod-dist-+ : ∀ {n} a b → (a + b) mod (suc n) ≡ (toℕ (a mod (suc n)) + toℕ (b mod (suc n))) mod (suc n)
 mod-dist-+ {n} a b = mod-uniq {n} ((a + b) mod m) ((toℕ ra + toℕ rb) mod m) ((a + b) div m) (((toℕ ra + toℕ rb) div m) + (qa + qb)) Q
   where
+    open ≡-Reasoning
     m = 1 + n
     qa = a div m
     qb = b div m
@@ -218,6 +226,8 @@ mod-dist-* a b = {!!}
 3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
 3∣*-split a b (divides q a*b≡q*3) = {!!}
   where
+    open ≡-Reasoning
+
     P : (toℕ (a mod 3) * toℕ (b mod 3)) mod 3 ≡ Fin.zero
     P = begin
           (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
@@ -252,6 +262,8 @@ prop1 a rewrite mod-dist-* a a with a mod 3
 prop2a : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ a)
 prop2a a b c a²+b²≡3c² = 3∣²⇒3∣ 3∣a²
   where
+    open ≡-Reasoning
+
     lem1 : (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3 ≡ Fin.zero
     lem1 = begin
         (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
@@ -310,6 +322,8 @@ prop2a a b c a²+b²≡3c² = 3∣²⇒3∣ 3∣a²
 prop2b : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ b)
 prop2b a b c a²+b²≡3c² = prop2a b a c b²+a²≡3*c²
   where
+    open ≡-Reasoning
+
     b²+a²≡3*c² : (b ² + a ² ≡ 3 * c ²)
     b²+a²≡3*c² = begin
         b ² + a ²
@@ -344,6 +358,8 @@ private
   lem3 : ∀ a b c → (a * 3) ² + (b * 3) ² ≡ 3 * (c * 3) ² → a ² + b ² ≡ 3 * c ²
   lem3 a b c P = cancel-*-right (a ² + b ²) (3 * c ²) Q
     where  
+      open ≡-Reasoning
+
       Q : (a ² + b ²) * 3 ² ≡ (3 * c ²) * 3 ²
       Q = begin
             (a ² + b ²) * 3 ²
@@ -368,6 +384,8 @@ prop3a-step
 prop3a-step zero rec b c P = refl
 prop3a-step (suc n) rec b c P = body
   where
+    open ≡-Reasoning
+
     a : ℕ
     a = suc n
 
@@ -400,6 +418,8 @@ prop3a a = <-rec (λ n → ∀ b c → (n ² + b ² ≡ 3 * c ²) → n ≡ 0) p
 prop3b : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → b ≡ 0
 prop3b a b c a²+b²≡3c² = prop3a b a c b²+a²≡3*c²
   where
+    open ≡-Reasoning
+
     b²+a²≡3*c² : b ² + a ² ≡ 3 * c ²
     b²+a²≡3*c² = begin
         b ² + a ²
@@ -416,6 +436,8 @@ prop3c-step
 prop3c-step zero rec a b P = refl
 prop3c-step (suc n) rec a b P = body
   where
+    open ≡-Reasoning
+
     c : ℕ
     c = suc n
 
