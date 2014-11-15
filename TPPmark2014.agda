@@ -50,6 +50,23 @@ distribˡ-*-+ m n o =
 *-right-identity : ∀ n → n * 1 ≡ n
 *-right-identity n = trans (*-comm n 1) (*-left-identity n)
 
+cancel-+-right : ∀ i {j k} → j + i ≡ k + i → j ≡ k
+cancel-+-right i {j} {k} P = cancel-+-left i Q
+  where
+    open ≡-Reasoning
+
+    Q : i + j ≡ i + k
+    Q =
+      begin
+        i + j
+      ≡⟨ +-comm i j ⟩
+        j + i
+      ≡⟨ P ⟩
+        k + i
+      ≡⟨ +-comm k i ⟩
+        i + k
+      ∎
+
 -- m≥1 ∧ n≥2 ⇒ m<n*m
 s<ss*s : ∀ m n → suc m < suc (suc n) * suc m
 s<ss*s m n = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
@@ -92,6 +109,25 @@ s<ss*s m n = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
 
 s<s*ss : ∀ m n → suc m < suc m * suc (suc n)
 s<s*ss m n rewrite (*-comm (1 + m) (2 + n)) = s<ss*s m n
+
+<⇒≢ : ∀ {a b} → a < b → a ≢ b
+<⇒≢ {zero} {suc b} (s≤s 0≤b) 0≡1+b with 0≡1+b
+... | ()
+<⇒≢ {suc a} {suc b} (s≤s a<b) 1+a≡1+b = <⇒≢ a<b (cancel-+-left 1 1+a≡1+b)
+
+-- ---------------------------------------------------------------------------
+-- Lemmas about Fin
+
+cancel-toℕ : ∀ {n} (a b : Fin n) → toℕ a ≡ toℕ b → a ≡ b
+cancel-toℕ Fin.zero Fin.zero P = refl
+cancel-toℕ Fin.zero (Fin.suc b) ()
+cancel-toℕ (Fin.suc a) Fin.zero ()
+cancel-toℕ (Fin.suc a) (Fin.suc b) P = cong suc (cancel-toℕ a b (cancel-+-left 1 P))
+
+toℕ<n : ∀ {n} (a : Fin n) → toℕ a < n
+toℕ<n {zero} ()
+toℕ<n {suc m} Fin.zero = DTO.refl {1} +-mono (z≤n)
+toℕ<n {suc m} (Fin.suc x) = DTO.refl {1} +-mono (toℕ<n x)
 
 -- ---------------------------------------------------------------------------
 -- Definition of _² and its properties
