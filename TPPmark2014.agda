@@ -203,11 +203,82 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
 2+m∣1+n⇒quot<1+n {m} {n} (divides zero ())
 2+m∣1+n⇒quot<1+n {m} {n} (divides (suc o) sn≡so*ssm) rewrite sn≡so*ssm = s<s*ss o m
 
-mod-uniq : ∀ {n} (r1 r2 : Fin (suc n)) q1 q2 → toℕ r1 + q1 * (suc n) ≡ toℕ r2 + q2 * (suc n) → r1 ≡ r2
-mod-uniq {n} r1 r2 q1 q2 P = {!!}
+div-uniq-lemma : ∀ {n} (r1 r2 : Fin n) q1 k → toℕ r1 + q1 * n < toℕ r2 + suc (q1 + k) * n
+div-uniq-lemma {zero} ()
+div-uniq-lemma {suc n-1} r1 r2 q1 k = r1+q1*n<r2+q2*n
+  where
+    open ≤-Reasoning
+    n = suc n-1
+    q2 = suc (q1 + k)
+
+    1+q1≤q2 : suc q1 ≤ q2
+    1+q1≤q2 =
+      begin
+        suc q1
+      ≤⟨ m≤m+n (suc q1) k ⟩ 
+        suc q1 + k
+      ≤⟨ DTO.refl ⟩
+        q2
+      ∎
+
+    n+q1*n≤q2*n : n + q1 * n ≤ q2 * n -- (suc q1) * n ≤ q2 * n
+    n+q1*n≤q2*n = 1+q1≤q2 *-mono DTO.refl {n}
+
+    r1+q1*n<r2+q2*n : suc (toℕ r1) + q1 * n ≤ toℕ r2 + q2 * n -- toℕ r1 + q1 * n < toℕ r2 + q2 * n
+    r1+q1*n<r2+q2*n =
+      begin
+        suc (toℕ r1) + q1 * n
+      ≤⟨ toℕ<n r1 +-mono DTO.refl ⟩
+        n + q1 * n
+      ≤⟨ n+q1*n≤q2*n ⟩
+        q2 * n
+      ≤⟨ n≤m+n (toℕ r2) (q2 * n) ⟩
+        toℕ r2 + q2 * n        
+      ∎
+
+div-uniq : ∀ {n} (r1 r2 : Fin n) q1 q2 → toℕ r1 + q1 * n ≡ toℕ r2 + q2 * n → q1 ≡ q2
+div-uniq {zero} ()
+div-uniq {suc _} r1 r2 q1 q2 P with compare q1 q2
+div-uniq {suc _} r1 r2 .m .m P | equal m = refl
+div-uniq {suc n-1} r1 r2 .q1 .(suc (q1 + k)) r1+q1*n≡r2+q2*n | less q1 k = ⊥-elim (r1+q1*n≢r2+q2*n r1+q1*n≡r2+q2*n)
+  where
+    n = suc n-1
+    q2 = suc (q1 + k)
+    r1+q1*n<r2+q2*n : suc (toℕ r1) + q1 * n ≤ toℕ r2 + q2 * n
+    r1+q1*n<r2+q2*n = div-uniq-lemma r1 r2 q1 k
+    r1+q1*n≢r2+q2*n : toℕ r1 + q1 * n ≢ toℕ r2 + q2 * n
+    r1+q1*n≢r2+q2*n = <⇒≢ r1+q1*n<r2+q2*n
+div-uniq {suc n-1} r1 r2 .(suc (q2 + k)) .q2 r1+q1*n≡r2+q2*n | greater q2 k = ⊥-elim (r2+q2*n≢r1+q1*n (sym r1+q1*n≡r2+q2*n))
+  where
+    n = suc n-1
+    q1 = suc (q2 + k)
+    r2+q2*n<r1+q1*n : suc (toℕ r2) + q2 * n ≤ toℕ r1 + q1 * n
+    r2+q2*n<r1+q1*n = div-uniq-lemma r2 r1 q2 k
+    r2+q2*n≢r1+q1*n : toℕ r2 + q2 * n ≢ toℕ r1 + q1 * n
+    r2+q2*n≢r1+q1*n = <⇒≢ r2+q2*n<r1+q1*n
+
+mod-uniq : ∀ {n} (r1 r2 : Fin n) q1 q2 → toℕ r1 + q1 * n ≡ toℕ r2 + q2 * n → r1 ≡ r2
+mod-uniq {zero} ()
+mod-uniq {suc m} r1 r2 q1 q2 P = cancel-toℕ r1 r2 P2
+  where
+    open ≡-Reasoning
+    n = suc m
+
+    P1 : toℕ r1 + q1 * n ≡ toℕ r2 + q1 * n
+    P1 =
+      begin
+        toℕ r1 + q1 * n
+      ≡⟨  P ⟩ 
+        toℕ r2 + q2 * n
+      ≡⟨  cong (λ x → toℕ r2 + x * n) (sym (div-uniq r1 r2 q1 q2 P)) ⟩ 
+        toℕ r2 + q1 * n
+      ∎
+
+    P2 : toℕ r1 ≡ toℕ r2
+    P2 = cancel-+-right (q1 * n) P1
 
 mod-dist-+ : ∀ {n} a b → (a + b) mod (suc n) ≡ (toℕ (a mod (suc n)) + toℕ (b mod (suc n))) mod (suc n)
-mod-dist-+ {n} a b = mod-uniq {n} ((a + b) mod m) ((toℕ ra + toℕ rb) mod m) ((a + b) div m) (((toℕ ra + toℕ rb) div m) + (qa + qb)) Q
+mod-dist-+ {n} a b = mod-uniq ((a + b) mod m) ((toℕ ra + toℕ rb) mod m) ((a + b) div m) (((toℕ ra + toℕ rb) div m) + (qa + qb)) Q
   where
     open ≡-Reasoning
     m = 1 + n
