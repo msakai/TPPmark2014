@@ -15,11 +15,15 @@ open import Data.Nat.Divisibility
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
 open import Data.Sum
+open import Relation.Binary
 open import Relation.Binary.PropositionalEquality 
 open import Relation.Nullary
 open import Relation.Nullary.Decidable
 open import Function
 open import Induction.Nat
+
+private
+  module DTO = DecTotalOrder Data.Nat.decTotalOrder
 
 -- ---------------------------------------------------------------------------
 -- Basic arithmetic lemma
@@ -53,7 +57,7 @@ s<ss*s m n = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
     open ≡-Reasoning
 
     2+m≤2+m : 2 + m ≤ 2 + m
-    2+m≤2+m = ≤′⇒≤ ≤′-refl
+    2+m≤2+m = DTO.refl
 
     2+m≤2+m+m+n+nm : 2 + m ≤ (2 + m) + (m + (n + n * m))
     2+m≤2+m+m+n+nm = m≤m+n (2 + m) (m + (n + n * m))
