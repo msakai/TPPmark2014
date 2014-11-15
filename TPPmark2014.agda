@@ -156,8 +156,60 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
 2+m∣1+n⇒quot<1+n {m} {n} (divides zero ())
 2+m∣1+n⇒quot<1+n {m} {n} (divides (suc o) sn≡so*ssm) rewrite sn≡so*ssm = s<s*ss o m
 
-mod-dist-+ : ∀ a b → (a + b) mod 3 ≡ (toℕ (a mod 3) + toℕ (b mod 3)) mod 3
-mod-dist-+ a b = {!!}
+mod-uniq : ∀ {n} (r1 r2 : Fin (suc n)) q1 q2 → toℕ r1 + q1 * (suc n) ≡ toℕ r2 + q2 * (suc n) → r1 ≡ r2
+mod-uniq {n} r1 r2 q1 q2 P = {!!}
+
+mod-dist-+ : ∀ {n} a b → (a + b) mod (suc n) ≡ (toℕ (a mod (suc n)) + toℕ (b mod (suc n))) mod (suc n)
+mod-dist-+ {n} a b = mod-uniq {n} ((a + b) mod m) ((toℕ ra + toℕ rb) mod m) ((a + b) div m) (((toℕ ra + toℕ rb) div m) + (qa + qb)) Q
+  where
+    m = 1 + n
+    qa = a div m
+    qb = b div m
+    ra = a mod m
+    rb = b mod m
+
+    lem : ∀ a b c d → (a + b) + (c + d) ≡ (a + c) + (b + d)
+    lem a b c d =
+      begin
+        (a + b) + (c + d)
+      ≡⟨  +-assoc a b (c + d) ⟩ 
+        a + (b + (c + d))
+      ≡⟨  cong (λ x → a + x) (sym (+-assoc b c d)) ⟩ 
+        a + ((b + c) + d)
+      ≡⟨  cong (λ x → a + (x + d)) (+-comm b c) ⟩ 
+        a + ((c + b) + d)
+      ≡⟨  cong (λ x → a + x) (+-assoc c b d) ⟩ 
+        a + (c + (b + d))
+      ≡⟨  sym (+-assoc a c (b + d)) ⟩ 
+        (a + c) + (b + d)
+      ∎
+
+    P1 : a + b ≡ toℕ ((a + b) mod m) + ((a + b) div m) * m
+    P1 = DivMod.property $ (a + b) divMod m
+
+    P2 : a + b ≡ toℕ ((toℕ ra + toℕ rb) mod m) + (((toℕ ra + toℕ rb) div m) + (qa + qb)) * m
+    P2 =
+      begin
+        a + b
+      ≡⟨  cong (λ x → x + b) (DivMod.property (a divMod m)) ⟩ 
+        (toℕ ra + qa * m) + b
+      ≡⟨  cong (λ x → toℕ ra + qa * m + x) (DivMod.property (b divMod m)) ⟩ 
+        (toℕ ra + qa * m) + (toℕ rb + qb * m)
+      ≡⟨  lem (toℕ ra) (qa * m) (toℕ rb) (qb * m) ⟩ 
+        (toℕ ra + toℕ rb) + (qa * m + qb * m)
+      ≡⟨  cong (λ x → toℕ ra + toℕ rb + x) (sym (distribʳ-*-+ m qa qb)) ⟩ 
+        toℕ ra + toℕ rb + (qa + qb) * m
+      ≡⟨  cong (λ x → x + (qa + qb) * m) (DivMod.property ((toℕ ra + toℕ rb) divMod m)) ⟩
+        (toℕ ((toℕ ra + toℕ rb) mod m) + ((toℕ ra + toℕ rb) div m) * m) + (qa + qb) * m
+      ≡⟨  +-assoc (toℕ ((toℕ ra + toℕ rb) mod m)) ((toℕ ra + toℕ rb) div m * m) ((qa + qb) * m) ⟩
+        toℕ ((toℕ ra + toℕ rb) mod m) + (((toℕ ra + toℕ rb) div m) * m + (qa + qb) * m)
+      ≡⟨  cong (λ x → toℕ ((toℕ ra + toℕ rb) mod m) + x) (sym (distribʳ-*-+ m ((toℕ ra + toℕ rb) div m) (qa + qb))) ⟩
+        toℕ ((toℕ ra + toℕ rb) mod m) + (((toℕ ra + toℕ rb) div m) + (qa + qb)) * m
+      ∎
+
+    Q : toℕ ((a + b) mod m) + ((a + b) div m) * m
+      ≡ toℕ ((toℕ ra + toℕ rb) mod m) + (((toℕ ra + toℕ rb) div m) + (qa + qb)) * m
+    Q = trans (sym P1) P2
 
 mod-dist-* : ∀ a b → (a * b) mod 3 ≡ (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
 mod-dist-* a b = {!!}
