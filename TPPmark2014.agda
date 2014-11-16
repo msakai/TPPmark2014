@@ -1,10 +1,19 @@
-{-
-TPPmark2014 problem.
-
-See <http://imi.kyushu-u.ac.jp/lasm/tpp2014/tppmark2014-2.pdf> for details.
-
-Checked with and Agda-2.4.2 and agda-stdlib-0.8.1.
--}
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  TPPmark2014
+-- Copyright   :  (c) Masahiro Sakai 2012-2014
+-- License     :  BSD-style
+--
+-- TPPmark2014 problem.
+-- See <http://imi.kyushu-u.ac.jp/lasm/tpp2014/tppmark2014-2.pdf> for details.
+--
+-- Checked with and Agda-2.4.2 and agda-stdlib-0.8.1.
+--
+-- TODO:
+--
+-- * use CommutativeSemiring module and SemiringSolver module
+--
+-----------------------------------------------------------------------------
 module TPPmark2014 where
 
 open import Data.Empty
@@ -51,12 +60,11 @@ distribˡ-*-+ m n o =
 *-right-identity n = trans (*-comm n 1) (*-left-identity n)
 
 cancel-+-right : ∀ i {j k} → j + i ≡ k + i → j ≡ k
-cancel-+-right i {j} {k} P = cancel-+-left i Q
+cancel-+-right i {j} {k} P = cancel-+-left i lem
   where
     open ≡-Reasoning
-
-    Q : i + j ≡ i + k
-    Q =
+    lem : i + j ≡ i + k
+    lem =
       begin
         i + j
       ≡⟨ +-comm i j ⟩
@@ -107,6 +115,7 @@ s<ss*s m n = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
     P : 1 + m < (2 + n) * (1 + m)
     P = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
 
+-- m≥1 ∧ n≥2 ⇒ m<m*n
 s<s*ss : ∀ m n → suc m < suc m * suc (suc n)
 s<s*ss m n rewrite (*-comm (1 + m) (2 + n)) = s<ss*s m n
 
@@ -130,32 +139,6 @@ toℕ<n {suc m} Fin.zero = DTO.refl {1} +-mono (z≤n)
 toℕ<n {suc m} (Fin.suc x) = DTO.refl {1} +-mono (toℕ<n x)
 
 -- ---------------------------------------------------------------------------
--- Definition of _² and its properties
-
-_² : ℕ → ℕ
-_² n = n * n
-
-distrib-²-* : ∀ m n → (m * n) ² ≡ m ² * n ²
-distrib-²-* m n =
-  begin
-    (m * n) ²
-  ≡⟨ refl ⟩
-    (m * n) * (m * n)
-  ≡⟨ *-assoc m n (m * n) ⟩
-    m * (n * (m * n))
-  ≡⟨ cong (λ x → m * x) (*-comm n (m * n)) ⟩
-    m * ((m * n) * n)
-  ≡⟨ cong (λ x → m * x) (*-assoc m n n) ⟩
-    m * (m * (n * n))
-  ≡⟨ sym (*-assoc m m (n * n)) ⟩
-    (m * m) * (n * n)
-  ≡⟨ refl ⟩
-    m ² * n ²
-  ∎
-  where
-    open ≡-Reasoning
-
--- ---------------------------------------------------------------------------
 -- Some lemmas on divisibility and modulo arithmetic
 
 rem≡0⇒∣ : ∀ {a n} → (a mod (suc n) ≡ Fin.zero) → (suc n ∣ a)
@@ -173,7 +156,8 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
     m = suc n
 
 *∣* : ∀ {a₁ n₁ a₂ n₂} → (suc n₁ ∣ a₁) → (suc n₂ ∣ a₂) → (suc n₁ * suc n₂ ∣ a₁ * a₂)
-*∣* {a₁} {n₁} {a₂} {n₂} (divides q₁ a₁≡q₁*m₁) (divides q₂ a₂≡q₂*m₂) = divides (q₁ * q₂) $ begin
+*∣* {a₁} {n₁} {a₂} {n₂} (divides q₁ a₁≡q₁*m₁) (divides q₂ a₂≡q₂*m₂) = divides (q₁ * q₂) $
+    begin
       a₁ * a₂
     ≡⟨ cong (λ x → x * a₂) a₁≡q₁*m₁ ⟩
       (q₁ * m₁) * a₂
@@ -194,9 +178,6 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
     open ≡-Reasoning
     m₁ = suc n₁
     m₂ = suc n₂
-
-∣⇒²∣² : ∀ {a n} → (suc n ∣ a) → ((suc n) ² ∣ a ²)
-∣⇒²∣² {a} {n} 1+n∣a = *∣* 1+n∣a 1+n∣a
 
 -- m≥2 ∧ n≥1 ∧ m∣n ⇒ n div m < n
 2+m∣1+n⇒quot<1+n : ∀ {m} {n} → (2+m∣1+n : 2 + m ∣ 1 + n) → (quotient 2+m∣1+n < 1 + n)
@@ -259,13 +240,13 @@ div-uniq {suc n-1} r1 r2 .(suc (q2 + k)) .q2 r1+q1*n≡r2+q2*n | greater q2 k = 
 
 mod-uniq : ∀ {n} (r1 r2 : Fin n) q1 q2 → toℕ r1 + q1 * n ≡ toℕ r2 + q2 * n → r1 ≡ r2
 mod-uniq {zero} ()
-mod-uniq {suc m} r1 r2 q1 q2 P = cancel-toℕ r1 r2 P2
+mod-uniq {suc m} r1 r2 q1 q2 P = cancel-toℕ r1 r2 lem2
   where
     open ≡-Reasoning
     n = suc m
 
-    P1 : toℕ r1 + q1 * n ≡ toℕ r2 + q1 * n
-    P1 =
+    lem1 : toℕ r1 + q1 * n ≡ toℕ r2 + q1 * n
+    lem1 =
       begin
         toℕ r1 + q1 * n
       ≡⟨  P ⟩ 
@@ -274,17 +255,17 @@ mod-uniq {suc m} r1 r2 q1 q2 P = cancel-toℕ r1 r2 P2
         toℕ r2 + q1 * n
       ∎
 
-    P2 : toℕ r1 ≡ toℕ r2
-    P2 = cancel-+-right (q1 * n) P1
+    lem2 : toℕ r1 ≡ toℕ r2
+    lem2 = cancel-+-right (q1 * n) lem1
 
 mod-lemma : ∀ {n} a b k →  a ≡ b + k * suc n → a mod (suc n) ≡ b mod (suc n)
-mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k) Q
+mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k) lem
   where
     open ≡-Reasoning
     m = suc n
 
-    Q : toℕ (a mod m) + (a div m) * m ≡ toℕ (b mod m) + ((b div m) + k) * m
-    Q =
+    lem : toℕ (a mod m) + (a div m) * m ≡ toℕ (b mod m) + ((b div m) + k) * m
+    lem =
      begin
        toℕ (a mod m) + (a div m) * m
      ≡⟨  sym (DivMod.property (a divMod m)) ⟩
@@ -300,7 +281,7 @@ mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k)
      ∎
 
 mod-dist-+ : ∀ {n} a b → (a + b) mod (suc n) ≡ (toℕ (a mod (suc n)) + toℕ (b mod (suc n))) mod (suc n)
-mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa + qb) P
+mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa + qb) lem2
   where
     open ≡-Reasoning
     m = 1 + n
@@ -309,8 +290,8 @@ mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa +
     ra = a mod m
     rb = b mod m
 
-    lem : ∀ a b c d → (a + b) + (c + d) ≡ (a + c) + (b + d)
-    lem a b c d =
+    lem1 : ∀ a b c d → (a + b) + (c + d) ≡ (a + c) + (b + d)
+    lem1 a b c d =
       begin
         (a + b) + (c + d)
       ≡⟨  +-assoc a b (c + d) ⟩ 
@@ -325,22 +306,22 @@ mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa +
         (a + c) + (b + d)
       ∎
 
-    P : a + b ≡ toℕ ra + toℕ rb + (qa + qb) * m
-    P =
+    lem2 : a + b ≡ toℕ ra + toℕ rb + (qa + qb) * m
+    lem2 =
       begin
         a + b
       ≡⟨  cong (λ x → x + b) (DivMod.property (a divMod m)) ⟩ 
         (toℕ ra + qa * m) + b
       ≡⟨  cong (λ x → toℕ ra + qa * m + x) (DivMod.property (b divMod m)) ⟩ 
         (toℕ ra + qa * m) + (toℕ rb + qb * m)
-      ≡⟨  lem (toℕ ra) (qa * m) (toℕ rb) (qb * m) ⟩ 
+      ≡⟨  lem1 (toℕ ra) (qa * m) (toℕ rb) (qb * m) ⟩ 
         (toℕ ra + toℕ rb) + (qa * m + qb * m)
       ≡⟨  cong (λ x → toℕ ra + toℕ rb + x) (sym (distribʳ-*-+ m qa qb)) ⟩ 
         toℕ ra + toℕ rb + (qa + qb) * m
       ∎
 
 mod-dist-* : ∀ {n} a b → (a * b) mod (suc n) ≡ (toℕ (a mod (suc n)) * toℕ (b mod (suc n))) mod (suc n)
-mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) P
+mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) lem2
   where
     open ≡-Reasoning
     m = 1 + n
@@ -363,8 +344,8 @@ mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa
         ((a * c + a * d) + b * c) + b * d
       ∎
 
-    Q : toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m)) ≡ (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
-    Q =
+    lem1 : toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m)) ≡ (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
+    lem1 =
       begin
         toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m))
       ≡⟨ sym (+-assoc (toℕ ra * (qb * m)) (qa * m * toℕ rb) (qa * m * (qb * m))) ⟩
@@ -385,8 +366,8 @@ mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa
         (((toℕ ra * qb) + (qa * toℕ rb)) + ((qa * m) * qb)) * m
       ∎
 
-    P : a * b ≡ toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
-    P =
+    lem2 : a * b ≡ toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
+    lem2 =
       begin
         a * b
       ≡⟨ cong (λ x → x * b) (DivMod.property (a divMod m)) ⟩ 
@@ -399,9 +380,41 @@ mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa
         (toℕ ra * toℕ rb + toℕ ra * (qb * m)) + ((qa * m) * toℕ rb + (qa * m) * (qb * m))
       ≡⟨ +-assoc (toℕ ra * toℕ rb) (toℕ ra * (qb * m)) (qa * m * toℕ rb + qa * m * (qb * m)) ⟩
         toℕ ra * toℕ rb + (toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m)))
-      ≡⟨ cong (λ x → toℕ ra * toℕ rb + x) Q ⟩
+      ≡⟨ cong (λ x → toℕ ra * toℕ rb + x) lem1 ⟩
         toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
       ∎
+
+-- ---------------------------------------------------------------------------
+-- Definition of _² and its properties
+
+_² : ℕ → ℕ
+_² n = n * n
+
+distrib-²-* : ∀ m n → (m * n) ² ≡ m ² * n ²
+distrib-²-* m n =
+  begin
+    (m * n) ²
+  ≡⟨ refl ⟩
+    (m * n) * (m * n)
+  ≡⟨ *-assoc m n (m * n) ⟩
+    m * (n * (m * n))
+  ≡⟨ cong (λ x → m * x) (*-comm n (m * n)) ⟩
+    m * ((m * n) * n)
+  ≡⟨ cong (λ x → m * x) (*-assoc m n n) ⟩
+    m * (m * (n * n))
+  ≡⟨ sym (*-assoc m m (n * n)) ⟩
+    (m * m) * (n * n)
+  ≡⟨ refl ⟩
+    m ² * n ²
+  ∎
+  where
+    open ≡-Reasoning
+
+∣⇒²∣² : ∀ {a n} → (suc n ∣ a) → ((suc n) ² ∣ a ²)
+∣⇒²∣² {a} {n} 1+n∣a = *∣* 1+n∣a 1+n∣a
+
+-- ---------------------------------------------------------------------------
+-- Lemmas specific to modulo-3 arithmetic
 
 -- TODO: use primality of 3 instead of enumerating cases of "a mod 3" and "b mod 3"
 3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
@@ -444,7 +457,7 @@ mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa
 ... | inj₂ p = p
 
 -- ---------------------------------------------------------------------------
--- (i) For any a ∈ N, (a^2 mod 3) = 0 or (a^2 mod 3) = 1.
+-- (i) For any a ∈ N, (a² mod 3) = 0 or (a² mod 3) = 1.
 
 prop1 : ∀ a → (a ² mod 3 ≡ Fin.zero) ⊎ (a ² mod 3 ≡ Fin.suc (Fin.zero))
 prop1 a rewrite mod-dist-* {2} a a with a mod 3
@@ -454,7 +467,7 @@ prop1 a rewrite mod-dist-* {2} a a with a mod 3
 ... | (Fin.suc (Fin.suc (Fin.suc ())))
 
 -- ---------------------------------------------------------------------------
--- (ii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then (3 | a), (3 | b) and (3 | c).
+-- (ii) Let a ∈ N, b ∈ N and c ∈ N. If a² + b² = 3c² then (3 | a), (3 | b) and (3 | c).
 
 prop2a : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ a)
 prop2a a b c a²+b²≡3c² = 3∣²⇒3∣ 3∣a²
@@ -549,16 +562,16 @@ prop2c a b c P = 3∣²⇒3∣ 3∣c²
     3∣c² = /-cong 2 9∣3*c²
 
 -- ---------------------------------------------------------------------------
--- (iii) Let a ∈ N, b ∈ N and c ∈ N. If a^2 + b^2 = 3c^2 then a = b = c = 0.
+-- (iii) Let a ∈ N, b ∈ N and c ∈ N. If a² + b² = 3c² then a = b = c = 0.
 
 private
-  lem3 : ∀ a b c → (a * 3) ² + (b * 3) ² ≡ 3 * (c * 3) ² → a ² + b ² ≡ 3 * c ²
-  lem3 a b c P = cancel-*-right (a ² + b ²) (3 * c ²) Q
+  prop3-lemma : ∀ a b c → (a * 3) ² + (b * 3) ² ≡ 3 * (c * 3) ² → a ² + b ² ≡ 3 * c ²
+  prop3-lemma a b c P = cancel-*-right (a ² + b ²) (3 * c ²) lem
     where  
       open ≡-Reasoning
 
-      Q : (a ² + b ²) * 3 ² ≡ (3 * c ²) * 3 ²
-      Q = begin
+      lem : (a ² + b ²) * 3 ² ≡ (3 * c ²) * 3 ²
+      lem = begin
             (a ² + b ²) * 3 ²
           ≡⟨ distribʳ-*-+ (3 ²) (a ²) (b ²) ⟩
             a ² * 3 ² + b ² * 3 ²
@@ -582,8 +595,6 @@ prop3a-step zero rec b c P = refl
 prop3a-step (suc n) rec b c P = body
   where
     open ≡-Reasoning
-
-    a : ℕ
     a = suc n
 
     body : a ≡ 0
@@ -600,12 +611,12 @@ prop3a-step (suc n) rec b c P = body
         ∎
       where
         a'≡0 : a' ≡ 0
-        a'≡0 = rec a' (≤⇒≤′ a'<a) b' c' P3
+        a'≡0 = rec a' (≤⇒≤′ a'<a) b' c' lem2
           where
-            P2 : (a' * 3) ² + (b' * 3) ² ≡ 3 * (c' * 3) ²
-            P2 rewrite (sym a≡a'*3) | (sym b≡b'*3) | (sym c≡c'*3) = P
-            P3 : a' ² + b' ² ≡ 3 * c' ²
-            P3 = lem3 a' b' c' P2
+            lem1 : (a' * 3) ² + (b' * 3) ² ≡ 3 * (c' * 3) ²
+            lem1 rewrite (sym a≡a'*3) | (sym b≡b'*3) | (sym c≡c'*3) = P
+            lem2 : a' ² + b' ² ≡ 3 * c' ²
+            lem2 = prop3-lemma a' b' c' lem1
             a'<a : a' < a
             a'<a = 2+m∣1+n⇒quot<1+n (divides a' a≡a'*3)
 
@@ -634,8 +645,6 @@ prop3c-step zero rec a b P = refl
 prop3c-step (suc n) rec a b P = body
   where
     open ≡-Reasoning
-
-    c : ℕ
     c = suc n
 
     body : c ≡ 0
@@ -652,12 +661,12 @@ prop3c-step (suc n) rec a b P = body
         ∎
       where
         c'≡0 : c' ≡ 0
-        c'≡0 = rec c' (≤⇒≤′ c'<c) a' b' P3
+        c'≡0 = rec c' (≤⇒≤′ c'<c) a' b' lem2
           where
-            P2 : (a' * 3) ² + (b' * 3) ² ≡ 3 * (c' * 3) ²
-            P2 rewrite (sym a≡a'*3) | (sym b≡b'*3) | (sym c≡c'*3) = P
-            P3 : a' ² + b' ² ≡ 3 * c' ²
-            P3 = lem3 a' b' c' P2
+            lem1 : (a' * 3) ² + (b' * 3) ² ≡ 3 * (c' * 3) ²
+            lem1 rewrite (sym a≡a'*3) | (sym b≡b'*3) | (sym c≡c'*3) = P
+            lem2 : a' ² + b' ² ≡ 3 * c' ²
+            lem2 = prop3-lemma a' b' c' lem1
             c'<c : c' < c
             c'<c = 2+m∣1+n⇒quot<1+n (divides c' c≡c'*3)
 
