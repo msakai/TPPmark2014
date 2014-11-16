@@ -11,11 +11,12 @@
 --
 -- TODO:
 --
--- * use CommutativeSemiring module and SemiringSolver module
+-- * use SemiringSolver module
 --
 -----------------------------------------------------------------------------
 module TPPmark2014 where
 
+open import Algebra
 open import Data.Empty
 open import Data.Fin as Fin using (Fin; zero; suc; toℕ)
 open import Data.Nat
@@ -23,6 +24,7 @@ open import Data.Nat.DivMod
 open import Data.Nat.Divisibility
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
+open import Data.Product
 open import Data.Sum
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality 
@@ -33,31 +35,10 @@ open import Induction.Nat
 
 private
   module DTO = DecTotalOrder Data.Nat.decTotalOrder
+  module CS = CommutativeSemiring Data.Nat.Properties.commutativeSemiring
 
 -- ---------------------------------------------------------------------------
 -- Basic arithmetic lemma
-
-distribˡ-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
-distribˡ-*-+ m n o =
-  begin
-    m * (n + o)
-  ≡⟨  *-comm m (n + o) ⟩
-    (n + o) * m
-  ≡⟨  distribʳ-*-+ m n o ⟩
-    n * m + o * m
-  ≡⟨  cong (λ x → x + o * m) (*-comm n m) ⟩
-    m * n + o * m
-  ≡⟨  cong (λ x → m * n + x) (*-comm o m) ⟩
-    m * n + m * o
-  ∎
-  where
-    open ≡-Reasoning
-
-*-left-identity : ∀ n → 1 * n ≡ n
-*-left-identity n = +-right-identity n
-
-*-right-identity : ∀ n → n * 1 ≡ n
-*-right-identity n = trans (*-comm n 1) (*-left-identity n)
 
 cancel-+-right : ∀ i {j k} → j + i ≡ k + i → j ≡ k
 cancel-+-right i {j} {k} P = cancel-+-left i lem
@@ -94,17 +75,17 @@ s<ss*s m n = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
     2+m+m+n+nm≡ssn*sm = sym $
       begin
         (2 + n) * (1 + m)
-      ≡⟨ distribʳ-*-+ (1 + m) 2 n ⟩
+      ≡⟨ proj₂ CS.distrib (1 + m) 2 n ⟩
         2 * (1 + m) + n * (1 + m)
-      ≡⟨ cong (λ x → x + n * (1 + m)) (distribˡ-*-+ 2 1 m) ⟩
+      ≡⟨ cong (λ x → x + n * (1 + m)) (proj₁ CS.distrib 2 1 m) ⟩
         (2 + 2 * m) + n * (1 + m)
-      ≡⟨ cong (λ x → 2 + 2 * m + x) (distribˡ-*-+ n 1 m) ⟩
+      ≡⟨ cong (λ x → 2 + 2 * m + x) (proj₁ CS.distrib n 1 m) ⟩
         (2 + 2 * m) + (n * 1 + n * m)
       ≡⟨ refl ⟩
         (2 + (m + (m + 0))) + (n * 1 + n * m)
-      ≡⟨ cong (λ x → 2 + (m + x) + (n * 1 + n * m)) (+-right-identity m) ⟩
+      ≡⟨ cong (λ x → 2 + (m + x) + (n * 1 + n * m)) (proj₂ CS.+-identity m) ⟩
         (2 + (m + m)) + (n * 1 + n * m)
-      ≡⟨  cong (λ x → 2 + (m + m) + (x + n * m)) (*-right-identity n) ⟩
+      ≡⟨  cong (λ x → 2 + (m + m) + (x + n * m)) (proj₂ CS.*-identity n) ⟩
         (2 + (m + m)) + (n + n * m)
       ≡⟨  cong (λ x → x + (n + n * m)) (sym (+-assoc 2 m m)) ⟩
         ((2 + m) + m) + (n + n * m)
@@ -276,7 +257,7 @@ mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k)
        (toℕ (b mod m) + (b div m) * m) + k * m
      ≡⟨  +-assoc (toℕ (b mod m)) (b div m * m) (k * m) ⟩
        toℕ (b mod m) + ((b div m) * m + k * m)
-     ≡⟨  cong (λ x → toℕ (b mod m) + x) (sym (distribʳ-*-+ m (b div m) k)) ⟩
+     ≡⟨  cong (λ x → toℕ (b mod m) + x) (sym (proj₂ CS.distrib m (b div m) k)) ⟩
        toℕ (b mod m) + ((b div m) + k) * m
      ∎
 
@@ -316,7 +297,7 @@ mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa +
         (toℕ ra + qa * m) + (toℕ rb + qb * m)
       ≡⟨  lem1 (toℕ ra) (qa * m) (toℕ rb) (qb * m) ⟩ 
         (toℕ ra + toℕ rb) + (qa * m + qb * m)
-      ≡⟨  cong (λ x → toℕ ra + toℕ rb + x) (sym (distribʳ-*-+ m qa qb)) ⟩ 
+      ≡⟨  cong (λ x → toℕ ra + toℕ rb + x) (sym (proj₂ CS.distrib m qa qb)) ⟩
         toℕ ra + toℕ rb + (qa + qb) * m
       ∎
 
@@ -334,11 +315,11 @@ mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa
     expand-+*+ a b c d =
       begin
         (a + b) * (c + d)
-      ≡⟨ distribʳ-*-+ (c + d) a b ⟩
+      ≡⟨ proj₂ CS.distrib (c + d) a b ⟩
         a * (c + d) + b * (c + d)
-      ≡⟨ cong (λ x → x + b * (c + d)) (distribˡ-*-+ a c d) ⟩
+      ≡⟨ cong (λ x → x + b * (c + d)) (proj₁ CS.distrib a c d) ⟩
         (a * c + a * d) + b * (c + d)
-      ≡⟨ cong (λ x → a * c + a * d + x) (distribˡ-*-+ b c d) ⟩
+      ≡⟨ cong (λ x → a * c + a * d + x) (proj₁ CS.distrib b c d) ⟩
         (a * c + a * d) + (b * c + b * d)
       ≡⟨ sym (+-assoc (a * c + a * d) (b * c) (b * d)) ⟩
         ((a * c + a * d) + b * c) + b * d
@@ -360,9 +341,9 @@ mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa
         ((toℕ ra * qb) * m + qa * (toℕ rb * m)) + ((qa * m) * qb) * m
       ≡⟨ cong (λ x → toℕ ra * qb * m + x + qa * m * qb * m) (sym (*-assoc qa (toℕ rb) m)) ⟩
         ((toℕ ra * qb) * m + (qa * toℕ rb) * m) + ((qa * m) * qb) * m
-      ≡⟨ cong (λ x → x + qa * m * qb * m) (sym (distribʳ-*-+ m (toℕ ra * qb) (qa * toℕ rb))) ⟩
+      ≡⟨ cong (λ x → x + qa * m * qb * m) (sym (proj₂ CS.distrib m (toℕ ra * qb) (qa * toℕ rb))) ⟩
         ((toℕ ra * qb) + (qa * toℕ rb)) * m + ((qa * m) * qb) * m
-      ≡⟨ sym (distribʳ-*-+ m (toℕ ra * qb + qa * toℕ rb) (qa * m * qb)) ⟩
+      ≡⟨ sym (proj₂ CS.distrib m (toℕ ra * qb + qa * toℕ rb) (qa * m * qb)) ⟩
         (((toℕ ra * qb) + (qa * toℕ rb)) + ((qa * m) * qb)) * m
       ∎
 
@@ -573,7 +554,7 @@ private
       lem : (a ² + b ²) * 3 ² ≡ (3 * c ²) * 3 ²
       lem = begin
             (a ² + b ²) * 3 ²
-          ≡⟨ distribʳ-*-+ (3 ²) (a ²) (b ²) ⟩
+          ≡⟨ proj₂ CS.distrib (3 ²) (a ²) (b ²) ⟩
             a ² * 3 ² + b ² * 3 ²
           ≡⟨ cong (λ x → x + b ² * 3 ²) (sym (distrib-²-* a 3)) ⟩
             (a * 3) ² + b ² * 3 ²
