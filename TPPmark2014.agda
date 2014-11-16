@@ -122,7 +122,7 @@ toℕ<n {suc m} (Fin.suc x) = DTO.refl {1} +-mono (toℕ<n x)
 -- ---------------------------------------------------------------------------
 -- Some lemmas on divisibility and modulo arithmetic
 
-rem≡0⇒∣ : ∀ {a n} → (a mod (suc n) ≡ Fin.zero) → (suc n ∣ a)
+rem≡0⇒∣ : ∀ {a n} → (a mod suc n ≡ Fin.zero) → (suc n ∣ a)
 rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
       a
     ≡⟨ DivMod.property (a divMod m) ⟩
@@ -231,7 +231,7 @@ mod-uniq {suc m} r1 r2 q1 q2 P = cancel-toℕ r1 r2 lem2
     lem2 : toℕ r1 ≡ toℕ r2
     lem2 = cancel-+-right (q1 * n) lem1
 
-mod-lemma : ∀ {n} a b k →  a ≡ b + k * suc n → a mod (suc n) ≡ b mod (suc n)
+mod-lemma : ∀ {n} a b k →  a ≡ b + k * suc n → a mod suc n ≡ b mod suc n
 mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k) lem
   where
     open ≡-Reasoning
@@ -252,7 +252,7 @@ mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k)
      ∎
 
 abstract
-  mod-dist-+ : ∀ {n} a b → (a + b) mod (suc n) ≡ (toℕ (a mod (suc n)) + toℕ (b mod (suc n))) mod (suc n)
+  mod-dist-+ : ∀ {n} a b → (a + b) mod suc n ≡ (toℕ (a mod suc n) + toℕ (b mod suc n)) mod suc n
   mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa + qb) lem
     where
       open ≡-Reasoning
@@ -282,7 +282,7 @@ abstract
         ∎
 
 abstract
-  mod-dist-* : ∀ {n} a b → (a * b) mod (suc n) ≡ (toℕ (a mod (suc n)) * toℕ (b mod (suc n))) mod (suc n)
+  mod-dist-* : ∀ {n} a b → (a * b) mod suc n ≡ (toℕ (a mod suc n) * toℕ (b mod suc n)) mod suc n
   mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) lem
     where
       open ≡-Reasoning
