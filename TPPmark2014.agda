@@ -26,7 +26,6 @@ open import Data.Sum
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality 
 open import Relation.Nullary
-open import Relation.Nullary.Decidable
 open import Function
 open import Induction.Nat
 
