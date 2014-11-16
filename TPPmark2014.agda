@@ -21,7 +21,6 @@ open import Data.Nat
 open import Data.Nat.DivMod
 open import Data.Nat.Divisibility
 open import Data.Nat.Properties
-open import Data.Nat.Properties.Simple
 open import Data.Product
 open import Data.Sum
 open import Relation.Binary
@@ -48,11 +47,11 @@ cancel-+-right i {j} {k} P = cancel-+-left i lem
     lem =
       begin
         i + j
-      ≡⟨ +-comm i j ⟩
+      ≡⟨ CS.+-comm i j ⟩
         j + i
       ≡⟨ P ⟩
         k + i
-      ≡⟨ +-comm k i ⟩
+      ≡⟨ CS.+-comm k i ⟩
         i + k
       ∎
 
@@ -73,7 +72,7 @@ s<ss*s m n =
 
 -- m≥1 ∧ n≥2 ⇒ m<m*n
 s<s*ss : ∀ m n → suc m < suc m * suc (suc n)
-s<s*ss m n rewrite (*-comm (1 + m) (2 + n)) = s<ss*s m n
+s<s*ss m n rewrite (CS.*-comm (1 + m) (2 + n)) = s<ss*s m n
 
 <⇒≢ : ∀ {a b} → a < b → a ≢ b
 <⇒≢ {zero} {suc b} (s≤s 0≤b) 0≡1+b with 0≡1+b
@@ -313,7 +312,7 @@ abstract
             (a * b) mod 3
           ≡⟨ cong (λ x → x mod 3) a*b≡q*3 ⟩
             (q * 3) mod 3
-          ≡⟨ cong (λ x → x mod 3) (*-comm q 3) ⟩
+          ≡⟨ cong (λ x → x mod 3) (CS.*-comm q 3) ⟩
             (3 * q) mod 3
           ≡⟨ mod-dist-* 3 q ⟩
             Fin.zero
@@ -421,7 +420,7 @@ prop2b a b c a²+b²≡3c² = prop2a b a c b²+a²≡3*c²
     b²+a²≡3*c² : (b ² + a ² ≡ 3 * c ²)
     b²+a²≡3*c² = begin
         b ² + a ²
-      ≡⟨ +-comm (b ²) (a ²) ⟩
+      ≡⟨ CS.+-comm (b ²) (a ²) ⟩
         a ² + b ²
       ≡⟨ a²+b²≡3c² ⟩
         3 * c ²
@@ -468,7 +467,7 @@ private
             3 * (c * 3) ²
           ≡⟨ cong (λ x → 3 * x) (distrib-²-* c 3) ⟩
             3 * (c ² * 3 ²)
-          ≡⟨ sym (*-assoc 3 (c ²) (3 ²)) ⟩
+          ≡⟨ sym (CS.*-assoc 3 (c ²) (3 ²)) ⟩
             (3 * c ²) * 3 ²
           ∎
 
@@ -516,7 +515,7 @@ prop3b a b c a²+b²≡3c² = prop3a b a c b²+a²≡3*c²
     b²+a²≡3*c² : b ² + a ² ≡ 3 * c ²
     b²+a²≡3*c² = begin
         b ² + a ²
-      ≡⟨ +-comm (b ²) (a ²) ⟩
+      ≡⟨ CS.+-comm (b ²) (a ²) ⟩
         a ² + b ²
       ≡⟨ a²+b²≡3c² ⟩
         3 * c ²
