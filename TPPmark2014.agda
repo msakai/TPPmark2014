@@ -250,54 +250,66 @@ mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k)
        toℕ (b mod m) + ((b div m) + k) * m
      ∎
 
-mod-dist-+ : ∀ {n} a b → (a + b) mod (suc n) ≡ (toℕ (a mod (suc n)) + toℕ (b mod (suc n))) mod (suc n)
-mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa + qb) lem
-  where
-    open ≡-Reasoning
-    m = 1 + n
-    qa = a div m
-    qb = b div m
-    ra = a mod m
-    rb = b mod m
+abstract
+  mod-dist-+ : ∀ {n} a b → (a + b) mod (suc n) ≡ (toℕ (a mod (suc n)) + toℕ (b mod (suc n))) mod (suc n)
+  mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa + qb) lem
+    where
+      open ≡-Reasoning
+      m : ℕ
+      m = 1 + n
+      qa : ℕ
+      qa = a div m
+      qb : ℕ
+      qb = b div m
+      ra : Fin (suc n)
+      ra = a mod m
+      rb : Fin (suc n)
+      rb = b mod m
+  
+      lem : a + b ≡ toℕ ra + toℕ rb + (qa + qb) * m
+      lem =
+        begin
+          a + b
+        ≡⟨ cong (λ x → x + b) (DivMod.property (a divMod m)) ⟩ 
+          (toℕ ra + qa * m) + b
+        ≡⟨ cong (λ x → toℕ ra + qa * m + x) (DivMod.property (b divMod m)) ⟩ 
+          (toℕ ra + qa * m) + (toℕ rb + qb * m)
+        ≡⟨ solve 5 (λ ra rb qa qb m →
+                     (ra :+ qa :* m) :+ (rb :+ qb :* m) := (ra :+ rb) :+ (qa :+ qb) :* m)
+              refl (toℕ ra) (toℕ rb) qa qb m ⟩
+          toℕ ra + toℕ rb + (qa + qb) * m
+        ∎
 
-    lem : a + b ≡ toℕ ra + toℕ rb + (qa + qb) * m
-    lem =
-      begin
-        a + b
-      ≡⟨ cong (λ x → x + b) (DivMod.property (a divMod m)) ⟩ 
-        (toℕ ra + qa * m) + b
-      ≡⟨ cong (λ x → toℕ ra + qa * m + x) (DivMod.property (b divMod m)) ⟩ 
-        (toℕ ra + qa * m) + (toℕ rb + qb * m)
-      ≡⟨ solve 5 (λ ra rb qa qb m →
-                   (ra :+ qa :* m) :+ (rb :+ qb :* m) := (ra :+ rb) :+ (qa :+ qb) :* m)
-            refl (toℕ ra) (toℕ rb) qa qb m ⟩
-        toℕ ra + toℕ rb + (qa + qb) * m
-      ∎
-
-mod-dist-* : ∀ {n} a b → (a * b) mod (suc n) ≡ (toℕ (a mod (suc n)) * toℕ (b mod (suc n))) mod (suc n)
-mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) lem
-  where
-    open ≡-Reasoning
-    m = 1 + n
-    qa = a div m
-    qb = b div m
-    ra = a mod m
-    rb = b mod m
-
-    lem : a * b ≡ toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
-    lem =
-      begin
-        a * b
-      ≡⟨ cong (λ x → x * b) (DivMod.property (a divMod m)) ⟩ 
-        (toℕ ra + qa * m) * b
-      ≡⟨ cong (λ x → (toℕ ra + qa * m) * x) (DivMod.property (b divMod m)) ⟩ 
-        (toℕ ra + qa * m) * (toℕ rb + qb * m)
-      ≡⟨ solve 5 (λ qa qb ra rb m →
-                      (ra :+ qa :* m) :* (rb :+ qb :* m)
-                      := ra :* rb :+ (ra :* qb :+ qa :* rb :+ qa :* m :* qb) :* m)
-           refl qa qb (toℕ ra) (toℕ rb) m ⟩
-        toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
-      ∎
+abstract
+  mod-dist-* : ∀ {n} a b → (a * b) mod (suc n) ≡ (toℕ (a mod (suc n)) * toℕ (b mod (suc n))) mod (suc n)
+  mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) lem
+    where
+      open ≡-Reasoning
+      m : ℕ
+      m = 1 + n
+      qa : ℕ
+      qa = a div m
+      qb : ℕ
+      qb = b div m
+      ra : Fin (suc n)
+      ra = a mod m
+      rb : Fin (suc n)
+      rb = b mod m
+  
+      lem : a * b ≡ toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
+      lem =
+        begin
+          a * b
+        ≡⟨ cong (λ x → x * b) (DivMod.property (a divMod m)) ⟩ 
+          (toℕ ra + qa * m) * b
+        ≡⟨ cong (λ x → (toℕ ra + qa * m) * x) (DivMod.property (b divMod m)) ⟩ 
+          (toℕ ra + qa * m) * (toℕ rb + qb * m)
+        ≡⟨ solve 5 (λ qa qb ra rb m →
+                        (ra :+ qa :* m) :* (rb :+ qb :* m)
+                        := ra :* rb :+ (ra :* qb :+ qa :* rb :+ qa :* m :* qb) :* m)
+             refl qa qb (toℕ ra) (toℕ rb) m ⟩
+          toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
+        ∎
 
 -- ---------------------------------------------------------------------------
 -- Definition of _² and its properties
@@ -314,40 +326,41 @@ distrib-²-* m n = solve 2 (λ m n → (m :* n) :* (m :* n) := (m :* m) :* (n :*
 -- ---------------------------------------------------------------------------
 -- Lemmas specific to modulo-3 arithmetic
 
--- TODO: use primality of 3 instead of enumerating cases of "a mod 3" and "b mod 3"
-3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
-3∣*-split a b (divides q a*b≡q*3) = body
-  where
-    open ≡-Reasoning
-
-    lem1 : (toℕ (a mod 3) * toℕ (b mod 3)) mod 3 ≡ Fin.zero
-    lem1 = begin
-          (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
-        ≡⟨ sym (mod-dist-* a b) ⟩
-          (a * b) mod 3
-        ≡⟨ cong (λ x → x mod 3) a*b≡q*3 ⟩
-          (q * 3) mod 3
-        ≡⟨ cong (λ x → x mod 3) (*-comm q 3) ⟩
-          (3 * q) mod 3
-        ≡⟨ mod-dist-* 3 q ⟩
-          Fin.zero
-        ∎
-
-    lem2 : ∀ (a b : Fin 3) → ((toℕ a * toℕ b) mod 3 ≡ Fin.zero) → (a ≡ Fin.zero) ⊎ (b ≡ Fin.zero)
-    lem2 Fin.zero _ _ = inj₁ refl
-    lem2 _ Fin.zero _ = inj₂ refl
-    lem2 (Fin.suc Fin.zero) (Fin.suc Fin.zero) ()
-    lem2 (Fin.suc Fin.zero) (Fin.suc (Fin.suc Fin.zero)) ()
-    lem2 (Fin.suc Fin.zero) (Fin.suc (Fin.suc (Fin.suc ())))
-    lem2 (Fin.suc (Fin.suc Fin.zero)) (Fin.suc Fin.zero) ()
-    lem2 (Fin.suc (Fin.suc Fin.zero)) (Fin.suc (Fin.suc Fin.zero)) ()
-    lem2 (Fin.suc (Fin.suc Fin.zero)) (Fin.suc (Fin.suc (Fin.suc ())))
-    lem2 (Fin.suc (Fin.suc (Fin.suc ()))) _
-
-    body : (3 ∣ a) ⊎ (3 ∣ b)
-    body with lem2 (a mod 3) (b mod 3) lem1
-    ... | inj₁ Q = inj₁ (rem≡0⇒∣ Q)
-    ... | inj₂ Q = inj₂ (rem≡0⇒∣ Q)
+abstract
+  -- TODO: use primality of 3 instead of enumerating cases of "a mod 3" and "b mod 3"
+  3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
+  3∣*-split a b (divides q a*b≡q*3) = body
+    where
+      open ≡-Reasoning
+  
+      lem1 : (toℕ (a mod 3) * toℕ (b mod 3)) mod 3 ≡ Fin.zero
+      lem1 = begin
+            (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
+          ≡⟨ sym (mod-dist-* a b) ⟩
+            (a * b) mod 3
+          ≡⟨ cong (λ x → x mod 3) a*b≡q*3 ⟩
+            (q * 3) mod 3
+          ≡⟨ cong (λ x → x mod 3) (*-comm q 3) ⟩
+            (3 * q) mod 3
+          ≡⟨ mod-dist-* 3 q ⟩
+            Fin.zero
+          ∎
+  
+      lem2 : ∀ (a b : Fin 3) → ((toℕ a * toℕ b) mod 3 ≡ Fin.zero) → (a ≡ Fin.zero) ⊎ (b ≡ Fin.zero)
+      lem2 Fin.zero _ _ = inj₁ refl
+      lem2 _ Fin.zero _ = inj₂ refl
+      lem2 (Fin.suc Fin.zero) (Fin.suc Fin.zero) ()
+      lem2 (Fin.suc Fin.zero) (Fin.suc (Fin.suc Fin.zero)) ()
+      lem2 (Fin.suc Fin.zero) (Fin.suc (Fin.suc (Fin.suc ())))
+      lem2 (Fin.suc (Fin.suc Fin.zero)) (Fin.suc Fin.zero) ()
+      lem2 (Fin.suc (Fin.suc Fin.zero)) (Fin.suc (Fin.suc Fin.zero)) ()
+      lem2 (Fin.suc (Fin.suc Fin.zero)) (Fin.suc (Fin.suc (Fin.suc ())))
+      lem2 (Fin.suc (Fin.suc (Fin.suc ()))) _
+  
+      body : (3 ∣ a) ⊎ (3 ∣ b)
+      body with lem2 (a mod 3) (b mod 3) lem1
+      ... | inj₁ Q = inj₁ (rem≡0⇒∣ Q)
+      ... | inj₂ Q = inj₂ (rem≡0⇒∣ Q)
 
 3∣²⇒3∣ : ∀ {a} → (3 ∣ a ²) → (3 ∣ a)
 3∣²⇒3∣ {a} P with 3∣*-split a a P
