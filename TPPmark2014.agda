@@ -58,43 +58,18 @@ cancel-+-right i {j} {k} P = cancel-+-left i lem
 
 -- m≥1 ∧ n≥2 ⇒ m<n*m
 s<ss*s : ∀ m n → suc m < suc (suc n) * suc m
-s<ss*s m n = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
+s<ss*s m n =
+    begin
+      2 + m
+    ≤⟨ m≤m+n (2 + m) (m + (n + n * m)) ⟩
+      (2 + m) + (m + (n + n * m))
+    ≤⟨ DTO.reflexive 2+m+m+n+nm≡ssn*sm ⟩
+      (2 + n) * (1 + m)
+    ∎
   where
-    open ≡-Reasoning
-
-    2+m≤2+m : 2 + m ≤ 2 + m
-    2+m≤2+m = DTO.refl
-
-    2+m≤2+m+m+n+nm : 2 + m ≤ (2 + m) + (m + (n + n * m))
-    2+m≤2+m+m+n+nm = m≤m+n (2 + m) (m + (n + n * m))
-    
-    1+m<2+m+m+n+nm : 1 + m < (2 + m) + (m + (n + n * m))
-    1+m<2+m+m+n+nm = 2+m≤2+m+m+n+nm
-  
+    open ≤-Reasoning
     2+m+m+n+nm≡ssn*sm : (2 + m) + (m + (n + n * m)) ≡ (2 + n) * (1 + m)
-    2+m+m+n+nm≡ssn*sm = sym $
-      begin
-        (2 + n) * (1 + m)
-      ≡⟨ proj₂ CS.distrib (1 + m) 2 n ⟩
-        2 * (1 + m) + n * (1 + m)
-      ≡⟨ cong (λ x → x + n * (1 + m)) (proj₁ CS.distrib 2 1 m) ⟩
-        (2 + 2 * m) + n * (1 + m)
-      ≡⟨ cong (λ x → 2 + 2 * m + x) (proj₁ CS.distrib n 1 m) ⟩
-        (2 + 2 * m) + (n * 1 + n * m)
-      ≡⟨ refl ⟩
-        (2 + (m + (m + 0))) + (n * 1 + n * m)
-      ≡⟨ cong (λ x → 2 + (m + x) + (n * 1 + n * m)) (proj₂ CS.+-identity m) ⟩
-        (2 + (m + m)) + (n * 1 + n * m)
-      ≡⟨  cong (λ x → 2 + (m + m) + (x + n * m)) (proj₂ CS.*-identity n) ⟩
-        (2 + (m + m)) + (n + n * m)
-      ≡⟨  cong (λ x → x + (n + n * m)) (sym (+-assoc 2 m m)) ⟩
-        ((2 + m) + m) + (n + n * m)
-      ≡⟨  +-assoc (2 + m) m (n + n * m) ⟩
-        (2 + m) + (m + (n + n * m))
-      ∎
-
-    P : 1 + m < (2 + n) * (1 + m)
-    P = subst (λ x → 1 + m < x) 2+m+m+n+nm≡ssn*sm 1+m<2+m+m+n+nm
+    2+m+m+n+nm≡ssn*sm = solve 2 (λ m n → (con 2 :+ m) :+ (m :+ (n :+ n :* m)) := (con 2 :+ n) :* (con 1 :+ m)) refl m n
 
 -- m≥1 ∧ n≥2 ⇒ m<m*n
 s<s*ss : ∀ m n → suc m < suc m * suc (suc n)
@@ -159,7 +134,18 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
 
 div-uniq-lemma : ∀ {n} (r1 r2 : Fin n) q1 k → toℕ r1 + q1 * n < toℕ r2 + suc (q1 + k) * n
 div-uniq-lemma {zero} ()
-div-uniq-lemma {suc n-1} r1 r2 q1 k = r1+q1*n<r2+q2*n
+div-uniq-lemma {suc n-1} r1 r2 q1 k =
+    begin
+      suc (toℕ r1) + q1 * n
+    ≤⟨ toℕ<n r1 +-mono DTO.refl ⟩
+      n + q1 * n
+    ≤⟨ DTO.refl ⟩
+      (suc q1) * n
+    ≤⟨ 1+q1≤q2 *-mono DTO.refl {n} ⟩
+      q2 * n
+    ≤⟨ n≤m+n (toℕ r2) (q2 * n) ⟩
+      toℕ r2 + q2 * n        
+    ∎
   where
     open ≤-Reasoning
     n = suc n-1
@@ -173,21 +159,6 @@ div-uniq-lemma {suc n-1} r1 r2 q1 k = r1+q1*n<r2+q2*n
         suc q1 + k
       ≤⟨ DTO.refl ⟩
         q2
-      ∎
-
-    n+q1*n≤q2*n : n + q1 * n ≤ q2 * n -- (suc q1) * n ≤ q2 * n
-    n+q1*n≤q2*n = 1+q1≤q2 *-mono DTO.refl {n}
-
-    r1+q1*n<r2+q2*n : suc (toℕ r1) + q1 * n ≤ toℕ r2 + q2 * n -- toℕ r1 + q1 * n < toℕ r2 + q2 * n
-    r1+q1*n<r2+q2*n =
-      begin
-        suc (toℕ r1) + q1 * n
-      ≤⟨ toℕ<n r1 +-mono DTO.refl ⟩
-        n + q1 * n
-      ≤⟨ n+q1*n≤q2*n ⟩
-        q2 * n
-      ≤⟨ n≤m+n (toℕ r2) (q2 * n) ⟩
-        toℕ r2 + q2 * n        
       ∎
 
 div-uniq : ∀ {n} (r1 r2 : Fin n) q1 q2 → toℕ r1 + q1 * n ≡ toℕ r2 + q2 * n → q1 ≡ q2
@@ -235,9 +206,10 @@ mod-lemma : ∀ {n} a b k →  a ≡ b + k * suc n → a mod suc n ≡ b mod suc
 mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k) lem
   where
     open ≡-Reasoning
+    m : ℕ
     m = suc n
 
-    lem : toℕ (a mod m) + (a div m) * m ≡ toℕ (b mod m) + ((b div m) + k) * m
+    lem : toℕ (a mod m) + (a div m) * m ≡ toℕ (b mod m) + (b div m + k) * m
     lem =
      begin
        toℕ (a mod m) + (a div m) * m
@@ -248,7 +220,7 @@ mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k)
      ≡⟨  cong (λ x → x + k * m) (DivMod.property (b divMod m)) ⟩ 
        (toℕ (b mod m) + (b div m) * m) + k * m
      ≡⟨ solve 4 (λ bm bd m k → (bm :+ bd :* m) :+ k :* m := bm :+ (bd :+ k) :* m) refl (toℕ (b mod m)) (b div m) m k ⟩
-       toℕ (b mod m) + ((b div m) + k) * m
+       toℕ (b mod m) + (b div m + k) * m
      ∎
 
 abstract
