@@ -9,9 +9,6 @@
 --
 -- Checked with and Agda-2.4.2 and agda-stdlib-0.8.1.
 --
--- TODO:
---
--- * use SemiringSolver module
 --
 -----------------------------------------------------------------------------
 module TPPmark2014 where
@@ -32,6 +29,8 @@ open import Relation.Nullary
 open import Relation.Nullary.Decidable
 open import Function
 open import Induction.Nat
+
+open Data.Nat.Properties.SemiringSolver
 
 private
   module DTO = DecTotalOrder Data.Nat.decTotalOrder
@@ -144,15 +143,7 @@ rem≡0⇒∣ {a} {n} P = divides (a div m) $ begin
       (q₁ * m₁) * a₂
     ≡⟨ cong (λ x → (q₁ * m₁) * x) a₂≡q₂*m₂ ⟩
       (q₁ * m₁) * (q₂ * m₂)
-    ≡⟨ sym (*-assoc (q₁ * m₁) q₂ m₂) ⟩
-      ((q₁ * m₁) * q₂) * m₂
-    ≡⟨ cong (λ x → x * m₂) (*-assoc q₁ m₁ q₂) ⟩
-      (q₁ * (m₁ * q₂)) * m₂
-    ≡⟨ cong (λ x → (q₁ * x) * m₂) (*-comm m₁ q₂) ⟩
-      (q₁ * (q₂ * m₁)) * m₂
-    ≡⟨ cong (λ x → x * m₂) (sym (*-assoc q₁ q₂ m₁)) ⟩
-      ((q₁ * q₂) * m₁) * m₂
-    ≡⟨ *-assoc (q₁ * q₂) m₁ m₂ ⟩
+    ≡⟨ solve 4 (λ q₁ m₁ q₂ m₂ → (q₁ :* m₁) :* (q₂ :* m₂) := (q₁ :* q₂) :* (m₁ :* m₂)) refl q₁ m₁ q₂ m₂ ⟩
       (q₁ * q₂) * (m₁ * m₂)
     ∎
   where
@@ -255,14 +246,12 @@ mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k)
        b + k * m
      ≡⟨  cong (λ x → x + k * m) (DivMod.property (b divMod m)) ⟩ 
        (toℕ (b mod m) + (b div m) * m) + k * m
-     ≡⟨  +-assoc (toℕ (b mod m)) (b div m * m) (k * m) ⟩
-       toℕ (b mod m) + ((b div m) * m + k * m)
-     ≡⟨  cong (λ x → toℕ (b mod m) + x) (sym (proj₂ CS.distrib m (b div m) k)) ⟩
+     ≡⟨ solve 4 (λ bm bd m k → (bm :+ bd :* m) :+ k :* m := bm :+ (bd :+ k) :* m) refl (toℕ (b mod m)) (b div m) m k ⟩
        toℕ (b mod m) + ((b div m) + k) * m
      ∎
 
 mod-dist-+ : ∀ {n} a b → (a + b) mod (suc n) ≡ (toℕ (a mod (suc n)) + toℕ (b mod (suc n))) mod (suc n)
-mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa + qb) lem2
+mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa + qb) lem
   where
     open ≡-Reasoning
     m = 1 + n
@@ -271,38 +260,22 @@ mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa +
     ra = a mod m
     rb = b mod m
 
-    lem1 : ∀ a b c d → (a + b) + (c + d) ≡ (a + c) + (b + d)
-    lem1 a b c d =
-      begin
-        (a + b) + (c + d)
-      ≡⟨  +-assoc a b (c + d) ⟩ 
-        a + (b + (c + d))
-      ≡⟨  cong (λ x → a + x) (sym (+-assoc b c d)) ⟩ 
-        a + ((b + c) + d)
-      ≡⟨  cong (λ x → a + (x + d)) (+-comm b c) ⟩ 
-        a + ((c + b) + d)
-      ≡⟨  cong (λ x → a + x) (+-assoc c b d) ⟩ 
-        a + (c + (b + d))
-      ≡⟨  sym (+-assoc a c (b + d)) ⟩ 
-        (a + c) + (b + d)
-      ∎
-
-    lem2 : a + b ≡ toℕ ra + toℕ rb + (qa + qb) * m
-    lem2 =
+    lem : a + b ≡ toℕ ra + toℕ rb + (qa + qb) * m
+    lem =
       begin
         a + b
-      ≡⟨  cong (λ x → x + b) (DivMod.property (a divMod m)) ⟩ 
+      ≡⟨ cong (λ x → x + b) (DivMod.property (a divMod m)) ⟩ 
         (toℕ ra + qa * m) + b
-      ≡⟨  cong (λ x → toℕ ra + qa * m + x) (DivMod.property (b divMod m)) ⟩ 
+      ≡⟨ cong (λ x → toℕ ra + qa * m + x) (DivMod.property (b divMod m)) ⟩ 
         (toℕ ra + qa * m) + (toℕ rb + qb * m)
-      ≡⟨  lem1 (toℕ ra) (qa * m) (toℕ rb) (qb * m) ⟩ 
-        (toℕ ra + toℕ rb) + (qa * m + qb * m)
-      ≡⟨  cong (λ x → toℕ ra + toℕ rb + x) (sym (proj₂ CS.distrib m qa qb)) ⟩
+      ≡⟨ solve 5 (λ ra rb qa qb m →
+                   (ra :+ qa :* m) :+ (rb :+ qb :* m) := (ra :+ rb) :+ (qa :+ qb) :* m)
+            refl (toℕ ra) (toℕ rb) qa qb m ⟩
         toℕ ra + toℕ rb + (qa + qb) * m
       ∎
 
 mod-dist-* : ∀ {n} a b → (a * b) mod (suc n) ≡ (toℕ (a mod (suc n)) * toℕ (b mod (suc n))) mod (suc n)
-mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) lem2
+mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) lem
   where
     open ≡-Reasoning
     m = 1 + n
@@ -311,57 +284,18 @@ mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa
     ra = a mod m
     rb = b mod m
 
-    expand-+*+ : ∀ a b c d → (a + b) * (c + d) ≡ a * c + a * d + b * c + b * d
-    expand-+*+ a b c d =
-      begin
-        (a + b) * (c + d)
-      ≡⟨ proj₂ CS.distrib (c + d) a b ⟩
-        a * (c + d) + b * (c + d)
-      ≡⟨ cong (λ x → x + b * (c + d)) (proj₁ CS.distrib a c d) ⟩
-        (a * c + a * d) + b * (c + d)
-      ≡⟨ cong (λ x → a * c + a * d + x) (proj₁ CS.distrib b c d) ⟩
-        (a * c + a * d) + (b * c + b * d)
-      ≡⟨ sym (+-assoc (a * c + a * d) (b * c) (b * d)) ⟩
-        ((a * c + a * d) + b * c) + b * d
-      ∎
-
-    lem1 : toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m)) ≡ (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
-    lem1 =
-      begin
-        toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m))
-      ≡⟨ sym (+-assoc (toℕ ra * (qb * m)) (qa * m * toℕ rb) (qa * m * (qb * m))) ⟩
-        (toℕ ra * (qb * m) + (qa * m) * toℕ rb) + (qa * m) * (qb * m)
-      ≡⟨ cong (λ x → toℕ ra * (qb * m) + qa * m * toℕ rb + x) (sym (*-assoc (qa * m) qb m)) ⟩
-        (toℕ ra * (qb * m) + (qa * m) * toℕ rb) + ((qa * m) * qb) * m
-      ≡⟨ cong (λ x → x + qa * m * toℕ rb + qa * m * qb * m) (sym (*-assoc (toℕ ra) qb m)) ⟩
-        ((toℕ ra * qb) * m + (qa * m) * toℕ rb) + ((qa * m) * qb) * m
-      ≡⟨ cong (λ x → toℕ ra * qb * m + x + ((qa * m) * qb) * m) (*-assoc qa m (toℕ rb)) ⟩
-        ((toℕ ra * qb) * m + qa * (m * toℕ rb)) + ((qa * m) * qb) * m
-      ≡⟨ cong (λ x → toℕ ra * qb * m + qa * x + qa * m * qb * m) (*-comm m (toℕ rb)) ⟩
-        ((toℕ ra * qb) * m + qa * (toℕ rb * m)) + ((qa * m) * qb) * m
-      ≡⟨ cong (λ x → toℕ ra * qb * m + x + qa * m * qb * m) (sym (*-assoc qa (toℕ rb) m)) ⟩
-        ((toℕ ra * qb) * m + (qa * toℕ rb) * m) + ((qa * m) * qb) * m
-      ≡⟨ cong (λ x → x + qa * m * qb * m) (sym (proj₂ CS.distrib m (toℕ ra * qb) (qa * toℕ rb))) ⟩
-        ((toℕ ra * qb) + (qa * toℕ rb)) * m + ((qa * m) * qb) * m
-      ≡⟨ sym (proj₂ CS.distrib m (toℕ ra * qb + qa * toℕ rb) (qa * m * qb)) ⟩
-        (((toℕ ra * qb) + (qa * toℕ rb)) + ((qa * m) * qb)) * m
-      ∎
-
-    lem2 : a * b ≡ toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
-    lem2 =
+    lem : a * b ≡ toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
+    lem =
       begin
         a * b
       ≡⟨ cong (λ x → x * b) (DivMod.property (a divMod m)) ⟩ 
         (toℕ ra + qa * m) * b
       ≡⟨ cong (λ x → (toℕ ra + qa * m) * x) (DivMod.property (b divMod m)) ⟩ 
         (toℕ ra + qa * m) * (toℕ rb + qb * m)
-      ≡⟨ expand-+*+ (toℕ ra) (qa * m) (toℕ rb) (qb * m) ⟩
-        toℕ ra * toℕ rb + toℕ ra * (qb * m) + (qa * m) * toℕ rb + (qa * m) * (qb * m)
-      ≡⟨ +-assoc (toℕ ra * toℕ rb + toℕ ra * (qb * m)) (qa * m * toℕ rb) (qa * m * (qb * m)) ⟩
-        (toℕ ra * toℕ rb + toℕ ra * (qb * m)) + ((qa * m) * toℕ rb + (qa * m) * (qb * m))
-      ≡⟨ +-assoc (toℕ ra * toℕ rb) (toℕ ra * (qb * m)) (qa * m * toℕ rb + qa * m * (qb * m)) ⟩
-        toℕ ra * toℕ rb + (toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m)))
-      ≡⟨ cong (λ x → toℕ ra * toℕ rb + x) lem1 ⟩
+      ≡⟨ solve 5 (λ qa qb ra rb m →
+                      (ra :+ qa :* m) :* (rb :+ qb :* m)
+                      := ra :* rb :+ (ra :* qb :+ qa :* rb :+ qa :* m :* qb) :* m)
+           refl qa qb (toℕ ra) (toℕ rb) m ⟩
         toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
       ∎
 
@@ -372,24 +306,7 @@ _² : ℕ → ℕ
 _² n = n * n
 
 distrib-²-* : ∀ m n → (m * n) ² ≡ m ² * n ²
-distrib-²-* m n =
-  begin
-    (m * n) ²
-  ≡⟨ refl ⟩
-    (m * n) * (m * n)
-  ≡⟨ *-assoc m n (m * n) ⟩
-    m * (n * (m * n))
-  ≡⟨ cong (λ x → m * x) (*-comm n (m * n)) ⟩
-    m * ((m * n) * n)
-  ≡⟨ cong (λ x → m * x) (*-assoc m n n) ⟩
-    m * (m * (n * n))
-  ≡⟨ sym (*-assoc m m (n * n)) ⟩
-    (m * m) * (n * n)
-  ≡⟨ refl ⟩
-    m ² * n ²
-  ∎
-  where
-    open ≡-Reasoning
+distrib-²-* m n = solve 2 (λ m n → (m :* n) :* (m :* n) := (m :* m) :* (n :* n)) refl m n
 
 ∣⇒²∣² : ∀ {a n} → (suc n ∣ a) → ((suc n) ² ∣ a ²)
 ∣⇒²∣² {a} {n} 1+n∣a = *∣* 1+n∣a 1+n∣a
@@ -552,7 +469,8 @@ private
       open ≡-Reasoning
 
       lem : (a ² + b ²) * 3 ² ≡ (3 * c ²) * 3 ²
-      lem = begin
+      lem = 
+          begin
             (a ² + b ²) * 3 ²
           ≡⟨ proj₂ CS.distrib (3 ²) (a ²) (b ²) ⟩
             a ² * 3 ² + b ² * 3 ²
