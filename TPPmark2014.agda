@@ -339,8 +339,69 @@ mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa +
         toℕ ra + toℕ rb + (qa + qb) * m
       ∎
 
-mod-dist-* : ∀ a b → (a * b) mod 3 ≡ (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
-mod-dist-* a b = {!!}
+mod-dist-* : ∀ {n} a b → (a * b) mod (suc n) ≡ (toℕ (a mod (suc n)) * toℕ (b mod (suc n))) mod (suc n)
+mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) P
+  where
+    open ≡-Reasoning
+    m = 1 + n
+    qa = a div m
+    qb = b div m
+    ra = a mod m
+    rb = b mod m
+
+    expand-+*+ : ∀ a b c d → (a + b) * (c + d) ≡ a * c + a * d + b * c + b * d
+    expand-+*+ a b c d =
+      begin
+        (a + b) * (c + d)
+      ≡⟨ distribʳ-*-+ (c + d) a b ⟩
+        a * (c + d) + b * (c + d)
+      ≡⟨ cong (λ x → x + b * (c + d)) (distribˡ-*-+ a c d) ⟩
+        (a * c + a * d) + b * (c + d)
+      ≡⟨ cong (λ x → a * c + a * d + x) (distribˡ-*-+ b c d) ⟩
+        (a * c + a * d) + (b * c + b * d)
+      ≡⟨ sym (+-assoc (a * c + a * d) (b * c) (b * d)) ⟩
+        ((a * c + a * d) + b * c) + b * d
+      ∎
+
+    Q : toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m)) ≡ (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
+    Q =
+      begin
+        toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m))
+      ≡⟨ sym (+-assoc (toℕ ra * (qb * m)) (qa * m * toℕ rb) (qa * m * (qb * m))) ⟩
+        (toℕ ra * (qb * m) + (qa * m) * toℕ rb) + (qa * m) * (qb * m)
+      ≡⟨ cong (λ x → toℕ ra * (qb * m) + qa * m * toℕ rb + x) (sym (*-assoc (qa * m) qb m)) ⟩
+        (toℕ ra * (qb * m) + (qa * m) * toℕ rb) + ((qa * m) * qb) * m
+      ≡⟨ cong (λ x → x + qa * m * toℕ rb + qa * m * qb * m) (sym (*-assoc (toℕ ra) qb m)) ⟩
+        ((toℕ ra * qb) * m + (qa * m) * toℕ rb) + ((qa * m) * qb) * m
+      ≡⟨ cong (λ x → toℕ ra * qb * m + x + ((qa * m) * qb) * m) (*-assoc qa m (toℕ rb)) ⟩
+        ((toℕ ra * qb) * m + qa * (m * toℕ rb)) + ((qa * m) * qb) * m
+      ≡⟨ cong (λ x → toℕ ra * qb * m + qa * x + qa * m * qb * m) (*-comm m (toℕ rb)) ⟩
+        ((toℕ ra * qb) * m + qa * (toℕ rb * m)) + ((qa * m) * qb) * m
+      ≡⟨ cong (λ x → toℕ ra * qb * m + x + qa * m * qb * m) (sym (*-assoc qa (toℕ rb) m)) ⟩
+        ((toℕ ra * qb) * m + (qa * toℕ rb) * m) + ((qa * m) * qb) * m
+      ≡⟨ cong (λ x → x + qa * m * qb * m) (sym (distribʳ-*-+ m (toℕ ra * qb) (qa * toℕ rb))) ⟩
+        ((toℕ ra * qb) + (qa * toℕ rb)) * m + ((qa * m) * qb) * m
+      ≡⟨ sym (distribʳ-*-+ m (toℕ ra * qb + qa * toℕ rb) (qa * m * qb)) ⟩
+        (((toℕ ra * qb) + (qa * toℕ rb)) + ((qa * m) * qb)) * m
+      ∎
+
+    P : a * b ≡ toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
+    P =
+      begin
+        a * b
+      ≡⟨ cong (λ x → x * b) (DivMod.property (a divMod m)) ⟩ 
+        (toℕ ra + qa * m) * b
+      ≡⟨ cong (λ x → (toℕ ra + qa * m) * x) (DivMod.property (b divMod m)) ⟩ 
+        (toℕ ra + qa * m) * (toℕ rb + qb * m)
+      ≡⟨ expand-+*+ (toℕ ra) (qa * m) (toℕ rb) (qb * m) ⟩
+        toℕ ra * toℕ rb + toℕ ra * (qb * m) + (qa * m) * toℕ rb + (qa * m) * (qb * m)
+      ≡⟨ +-assoc (toℕ ra * toℕ rb + toℕ ra * (qb * m)) (qa * m * toℕ rb) (qa * m * (qb * m)) ⟩
+        (toℕ ra * toℕ rb + toℕ ra * (qb * m)) + ((qa * m) * toℕ rb + (qa * m) * (qb * m))
+      ≡⟨ +-assoc (toℕ ra * toℕ rb) (toℕ ra * (qb * m)) (qa * m * toℕ rb + qa * m * (qb * m)) ⟩
+        toℕ ra * toℕ rb + (toℕ ra * (qb * m) + (((qa * m) * toℕ rb) + (qa * m) * (qb * m)))
+      ≡⟨ cong (λ x → toℕ ra * toℕ rb + x) Q ⟩
+        toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
+      ∎
 
 -- TODO: 3が素数であることを利用して証明したいが、面倒なので a mod 3 と b mod 3 による場合分けで力技で証明する方針で
 3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
@@ -370,7 +431,7 @@ mod-dist-* a b = {!!}
 -- (i) For any a ∈ N, (a^2 mod 3) = 0 or (a^2 mod 3) = 1.
 
 prop1 : ∀ a → (a ² mod 3 ≡ Fin.zero) ⊎ (a ² mod 3 ≡ Fin.suc (Fin.zero))
-prop1 a rewrite mod-dist-* a a with a mod 3
+prop1 a rewrite mod-dist-* {2} a a with a mod 3
 ... | Fin.zero = inj₁ refl
 ... | (Fin.suc Fin.zero) = inj₂ refl
 ... | (Fin.suc (Fin.suc Fin.zero)) = inj₂ refl
