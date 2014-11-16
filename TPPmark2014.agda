@@ -403,14 +403,14 @@ mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa
         toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
       ∎
 
--- TODO: 3が素数であることを利用して証明したいが、面倒なので a mod 3 と b mod 3 による場合分けで力技で証明する方針で
+-- TODO: use primality of 3 instead of enumerating cases of "a mod 3" and "b mod 3"
 3∣*-split : ∀ a b → (3 ∣ a * b) → (3 ∣ a) ⊎ (3 ∣ b)
-3∣*-split a b (divides q a*b≡q*3) = {!!}
+3∣*-split a b (divides q a*b≡q*3) = body
   where
     open ≡-Reasoning
 
-    P : (toℕ (a mod 3) * toℕ (b mod 3)) mod 3 ≡ Fin.zero
-    P = begin
+    lem1 : (toℕ (a mod 3) * toℕ (b mod 3)) mod 3 ≡ Fin.zero
+    lem1 = begin
           (toℕ (a mod 3) * toℕ (b mod 3)) mod 3
         ≡⟨ sym (mod-dist-* a b) ⟩
           (a * b) mod 3
@@ -421,6 +421,22 @@ mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa
         ≡⟨ mod-dist-* 3 q ⟩
           Fin.zero
         ∎
+
+    lem2 : ∀ (a b : Fin 3) → ((toℕ a * toℕ b) mod 3 ≡ Fin.zero) → (a ≡ Fin.zero) ⊎ (b ≡ Fin.zero)
+    lem2 Fin.zero _ _ = inj₁ refl
+    lem2 _ Fin.zero _ = inj₂ refl
+    lem2 (Fin.suc Fin.zero) (Fin.suc Fin.zero) ()
+    lem2 (Fin.suc Fin.zero) (Fin.suc (Fin.suc Fin.zero)) ()
+    lem2 (Fin.suc Fin.zero) (Fin.suc (Fin.suc (Fin.suc ())))
+    lem2 (Fin.suc (Fin.suc Fin.zero)) (Fin.suc Fin.zero) ()
+    lem2 (Fin.suc (Fin.suc Fin.zero)) (Fin.suc (Fin.suc Fin.zero)) ()
+    lem2 (Fin.suc (Fin.suc Fin.zero)) (Fin.suc (Fin.suc (Fin.suc ())))
+    lem2 (Fin.suc (Fin.suc (Fin.suc ()))) _
+
+    body : (3 ∣ a) ⊎ (3 ∣ b)
+    body with lem2 (a mod 3) (b mod 3) lem1
+    ... | inj₁ Q = inj₁ (rem≡0⇒∣ Q)
+    ... | inj₂ Q = inj₂ (rem≡0⇒∣ Q)
 
 3∣²⇒3∣ : ∀ {a} → (3 ∣ a ²) → (3 ∣ a)
 3∣²⇒3∣ {a} P with 3∣*-split a a P
