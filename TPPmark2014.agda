@@ -9,6 +9,7 @@
 --
 -- Checked with and Agda-2.4.2 and agda-stdlib-0.8.1.
 --
+-- Latest version is available at <https://github.com/msakai/TPPmark2014>.
 --
 -----------------------------------------------------------------------------
 module TPPmark2014 where
