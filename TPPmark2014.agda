@@ -39,20 +39,18 @@ private
 -- Basic arithmetic lemma
 
 cancel-+-right : ∀ i {j k} → j + i ≡ k + i → j ≡ k
-cancel-+-right i {j} {k} P = cancel-+-left i lem
+cancel-+-right i {j} {k} P = cancel-+-left i $ 
+    begin
+      i + j
+    ≡⟨ CS.+-comm i j ⟩
+      j + i
+    ≡⟨ P ⟩
+      k + i
+    ≡⟨ CS.+-comm k i ⟩
+      i + k
+    ∎
   where
     open ≡-Reasoning
-    lem : i + j ≡ i + k
-    lem =
-      begin
-        i + j
-      ≡⟨ CS.+-comm i j ⟩
-        j + i
-      ≡⟨ P ⟩
-        k + i
-      ≡⟨ CS.+-comm k i ⟩
-        i + k
-      ∎
 
 -- m≥1 ∧ n≥2 ⇒ m<n*m
 s<ss*s : ∀ m n → suc m < suc (suc n) * suc m
@@ -182,48 +180,50 @@ div-uniq {suc n-1} r1 r2 .(suc (q2 + k)) .q2 r1+q1*n≡r2+q2*n | greater q2 k = 
 
 mod-uniq : ∀ {n} (r1 r2 : Fin n) q1 q2 → toℕ r1 + q1 * n ≡ toℕ r2 + q2 * n → r1 ≡ r2
 mod-uniq {zero} ()
-mod-uniq {suc m} r1 r2 q1 q2 P = cancel-toℕ r1 r2 lem2
+mod-uniq {suc m} r1 r2 q1 q2 P = cancel-toℕ r1 r2 $ cancel-+-right (q1 * n) $ 
+    begin
+      toℕ r1 + q1 * n
+    ≡⟨  P ⟩ 
+      toℕ r2 + q2 * n
+    ≡⟨  cong (λ x → toℕ r2 + x * n) (sym (div-uniq r1 r2 q1 q2 P)) ⟩ 
+      toℕ r2 + q1 * n
+    ∎
   where
     open ≡-Reasoning
     n = suc m
 
-    lem1 : toℕ r1 + q1 * n ≡ toℕ r2 + q1 * n
-    lem1 =
-      begin
-        toℕ r1 + q1 * n
-      ≡⟨  P ⟩ 
-        toℕ r2 + q2 * n
-      ≡⟨  cong (λ x → toℕ r2 + x * n) (sym (div-uniq r1 r2 q1 q2 P)) ⟩ 
-        toℕ r2 + q1 * n
-      ∎
-
-    lem2 : toℕ r1 ≡ toℕ r2
-    lem2 = cancel-+-right (q1 * n) lem1
-
 mod-lemma : ∀ {n} a b k →  a ≡ b + k * suc n → a mod suc n ≡ b mod suc n
-mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k) lem
+mod-lemma {n} a b k P = mod-uniq {m} (a mod m) (b mod m) (a div m) (b div m + k) $
+    begin
+      toℕ (a mod m) + (a div m) * m
+    ≡⟨  sym (DivMod.property (a divMod m)) ⟩
+      a
+    ≡⟨  P ⟩
+      b + k * m
+    ≡⟨  cong (λ x → x + k * m) (DivMod.property (b divMod m)) ⟩ 
+      (toℕ (b mod m) + (b div m) * m) + k * m
+    ≡⟨ solve 4 (λ bm bd m k → (bm :+ bd :* m) :+ k :* m := bm :+ (bd :+ k) :* m) refl (toℕ (b mod m)) (b div m) m k ⟩
+      toℕ (b mod m) + (b div m + k) * m
+    ∎
   where
     open ≡-Reasoning
     m : ℕ
     m = suc n
 
-    lem : toℕ (a mod m) + (a div m) * m ≡ toℕ (b mod m) + (b div m + k) * m
-    lem =
-     begin
-       toℕ (a mod m) + (a div m) * m
-     ≡⟨  sym (DivMod.property (a divMod m)) ⟩
-       a
-     ≡⟨  P ⟩
-       b + k * m
-     ≡⟨  cong (λ x → x + k * m) (DivMod.property (b divMod m)) ⟩ 
-       (toℕ (b mod m) + (b div m) * m) + k * m
-     ≡⟨ solve 4 (λ bm bd m k → (bm :+ bd :* m) :+ k :* m := bm :+ (bd :+ k) :* m) refl (toℕ (b mod m)) (b div m) m k ⟩
-       toℕ (b mod m) + (b div m + k) * m
-     ∎
-
 abstract
   mod-dist-+ : ∀ {n} a b → (a + b) mod suc n ≡ (toℕ (a mod suc n) + toℕ (b mod suc n)) mod suc n
-  mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa + qb) lem
+  mod-dist-+ {n} a b = mod-lemma (a + b) (toℕ (a mod m) + toℕ (b mod m)) (qa + qb) $
+      begin
+        a + b
+      ≡⟨ cong (λ x → x + b) (DivMod.property (a divMod m)) ⟩ 
+        (toℕ ra + qa * m) + b
+      ≡⟨ cong (λ x → toℕ ra + qa * m + x) (DivMod.property (b divMod m)) ⟩ 
+        (toℕ ra + qa * m) + (toℕ rb + qb * m)
+      ≡⟨ solve 5 (λ ra rb qa qb m →
+                   (ra :+ qa :* m) :+ (rb :+ qb :* m) := (ra :+ rb) :+ (qa :+ qb) :* m)
+            refl (toℕ ra) (toℕ rb) qa qb m ⟩
+        toℕ ra + toℕ rb + (qa + qb) * m
+      ∎
     where
       open ≡-Reasoning
       m : ℕ
@@ -236,24 +236,22 @@ abstract
       ra = a mod m
       rb : Fin (suc n)
       rb = b mod m
-  
-      lem : a + b ≡ toℕ ra + toℕ rb + (qa + qb) * m
-      lem =
-        begin
-          a + b
-        ≡⟨ cong (λ x → x + b) (DivMod.property (a divMod m)) ⟩ 
-          (toℕ ra + qa * m) + b
-        ≡⟨ cong (λ x → toℕ ra + qa * m + x) (DivMod.property (b divMod m)) ⟩ 
-          (toℕ ra + qa * m) + (toℕ rb + qb * m)
-        ≡⟨ solve 5 (λ ra rb qa qb m →
-                     (ra :+ qa :* m) :+ (rb :+ qb :* m) := (ra :+ rb) :+ (qa :+ qb) :* m)
-              refl (toℕ ra) (toℕ rb) qa qb m ⟩
-          toℕ ra + toℕ rb + (qa + qb) * m
-        ∎
 
 abstract
   mod-dist-* : ∀ {n} a b → (a * b) mod suc n ≡ (toℕ (a mod suc n) * toℕ (b mod suc n)) mod suc n
-  mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) lem
+  mod-dist-* {n} a b = mod-lemma (a * b) (toℕ ra * toℕ rb) (toℕ ra * qb + qa * toℕ rb + qa * m * qb) $
+      begin
+        a * b
+      ≡⟨ cong (λ x → x * b) (DivMod.property (a divMod m)) ⟩ 
+        (toℕ ra + qa * m) * b
+      ≡⟨ cong (λ x → (toℕ ra + qa * m) * x) (DivMod.property (b divMod m)) ⟩ 
+        (toℕ ra + qa * m) * (toℕ rb + qb * m)
+      ≡⟨ solve 5 (λ qa qb ra rb m →
+                      (ra :+ qa :* m) :* (rb :+ qb :* m)
+                      := ra :* rb :+ (ra :* qb :+ qa :* rb :+ qa :* m :* qb) :* m)
+           refl qa qb (toℕ ra) (toℕ rb) m ⟩
+        toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
+      ∎
     where
       open ≡-Reasoning
       m : ℕ
@@ -266,21 +264,6 @@ abstract
       ra = a mod m
       rb : Fin (suc n)
       rb = b mod m
-  
-      lem : a * b ≡ toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
-      lem =
-        begin
-          a * b
-        ≡⟨ cong (λ x → x * b) (DivMod.property (a divMod m)) ⟩ 
-          (toℕ ra + qa * m) * b
-        ≡⟨ cong (λ x → (toℕ ra + qa * m) * x) (DivMod.property (b divMod m)) ⟩ 
-          (toℕ ra + qa * m) * (toℕ rb + qb * m)
-        ≡⟨ solve 5 (λ qa qb ra rb m →
-                        (ra :+ qa :* m) :* (rb :+ qb :* m)
-                        := ra :* rb :+ (ra :* qb :+ qa :* rb :+ qa :* m :* qb) :* m)
-             refl qa qb (toℕ ra) (toℕ rb) m ⟩
-          toℕ ra * toℕ rb + (toℕ ra * qb + qa * toℕ rb + qa * m * qb) * m
-        ∎
 
 -- ---------------------------------------------------------------------------
 -- Definition of _² and its properties
@@ -409,18 +392,16 @@ prop2a a b c a²+b²≡3c² = 3∣²⇒3∣ 3∣a²
     3∣a² = rem≡0⇒∣ a²mod3≡0
 
 prop2b : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ b)
-prop2b a b c a²+b²≡3c² = prop2a b a c b²+a²≡3*c²
+prop2b a b c a²+b²≡3c² = prop2a b a c $
+    begin
+      b ² + a ²
+    ≡⟨ CS.+-comm (b ²) (a ²) ⟩
+      a ² + b ²
+    ≡⟨ a²+b²≡3c² ⟩
+      3 * c ²
+    ∎
   where
     open ≡-Reasoning
-
-    b²+a²≡3*c² : (b ² + a ² ≡ 3 * c ²)
-    b²+a²≡3*c² = begin
-        b ² + a ²
-      ≡⟨ CS.+-comm (b ²) (a ²) ⟩
-        a ² + b ²
-      ≡⟨ a²+b²≡3c² ⟩
-        3 * c ²
-      ∎
 
 prop2c : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ c)
 prop2c a b c P = 3∣²⇒3∣ 3∣c²
@@ -445,21 +426,18 @@ prop2c a b c P = 3∣²⇒3∣ 3∣c²
 
 private
   prop3-lemma : ∀ a b c → (a * 3) ² + (b * 3) ² ≡ 3 * (c * 3) ² → a ² + b ² ≡ 3 * c ²
-  prop3-lemma a b c P = cancel-*-right (a ² + b ²) (3 * c ²) lem
+  prop3-lemma a b c P = cancel-*-right (a ² + b ²) (3 * c ²) $ 
+      begin
+        (a ² + b ²) * 3 ²
+      ≡⟨ solve 2 (λ a b → (a :* a :+ b :* b) :* con 9 := (a :* con 3) :* (a :* con 3) :+ (b :* con 3) :* (b :* con 3)) refl a b ⟩
+        (a * 3) ² + (b * 3) ²
+      ≡⟨ P ⟩
+        3 * (c * 3) ²
+      ≡⟨ solve 1 (λ c → con 3 :* ((c :* con 3) :* (c :* con 3)) := (con 3 :* (c :* c)) :* con 9) refl c ⟩
+        (3 * c ²) * 3 ²
+      ∎
     where  
       open ≡-Reasoning
-
-      lem : (a ² + b ²) * 3 ² ≡ (3 * c ²) * 3 ²
-      lem = 
-          begin
-            (a ² + b ²) * 3 ²
-          ≡⟨ solve 2 (λ a b → (a :* a :+ b :* b) :* con 9 := (a :* con 3) :* (a :* con 3) :+ (b :* con 3) :* (b :* con 3)) refl a b ⟩
-            (a * 3) ² + (b * 3) ²
-          ≡⟨ P ⟩
-            3 * (c * 3) ²
-          ≡⟨ solve 1 (λ c → con 3 :* ((c :* con 3) :* (c :* con 3)) := (con 3 :* (c :* c)) :* con 9) refl c ⟩
-            (3 * c ²) * 3 ²
-          ∎
 
 prop3a-step
   : ∀ a
@@ -498,18 +476,16 @@ prop3a : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → a ≡ 0
 prop3a a = <-rec (λ n → ∀ b c → (n ² + b ² ≡ 3 * c ²) → n ≡ 0) prop3a-step a
 
 prop3b : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → b ≡ 0
-prop3b a b c a²+b²≡3c² = prop3a b a c b²+a²≡3*c²
+prop3b a b c a²+b²≡3c² = prop3a b a c $
+    begin
+      b ² + a ²
+    ≡⟨ CS.+-comm (b ²) (a ²) ⟩
+      a ² + b ²
+    ≡⟨ a²+b²≡3c² ⟩
+      3 * c ²
+    ∎
   where
     open ≡-Reasoning
-
-    b²+a²≡3*c² : b ² + a ² ≡ 3 * c ²
-    b²+a²≡3*c² = begin
-        b ² + a ²
-      ≡⟨ CS.+-comm (b ²) (a ²) ⟩
-        a ² + b ²
-      ≡⟨ a²+b²≡3c² ⟩
-        3 * c ²
-      ∎
 
 prop3c-step
   : ∀ c
