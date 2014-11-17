@@ -7,7 +7,7 @@
 -- TPPmark2014 problem.
 -- See <http://imi.kyushu-u.ac.jp/lasm/tpp2014/tppmark2014-2.pdf> for details.
 --
--- Checked with and Agda-2.4.2 and agda-stdlib-0.8.1.
+-- Checked with and Agda-2.4.2.1 and agda-stdlib-0.9.
 --
 -- Latest version is available at <https://github.com/msakai/TPPmark2014>.
 --
