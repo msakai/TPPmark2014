@@ -288,9 +288,6 @@ abstract
 _² : ℕ → ℕ
 _² n = n * n
 
-distrib-²-* : ∀ m n → (m * n) ² ≡ m ² * n ²
-distrib-²-* m n = solve 2 (λ m n → (m :* n) :* (m :* n) := (m :* m) :* (n :* n)) refl m n
-
 ∣⇒²∣² : ∀ {a n} → (suc n ∣ a) → ((suc n) ² ∣ a ²)
 ∣⇒²∣² {a} {n} 1+n∣a = *∣* 1+n∣a 1+n∣a
 
@@ -456,17 +453,11 @@ private
       lem = 
           begin
             (a ² + b ²) * 3 ²
-          ≡⟨ proj₂ CS.distrib (3 ²) (a ²) (b ²) ⟩
-            a ² * 3 ² + b ² * 3 ²
-          ≡⟨ cong (λ x → x + b ² * 3 ²) (sym (distrib-²-* a 3)) ⟩
-            (a * 3) ² + b ² * 3 ²
-          ≡⟨ cong (λ x → (a * 3) ² + x) (sym (distrib-²-* b 3)) ⟩
+          ≡⟨ solve 2 (λ a b → (a :* a :+ b :* b) :* con 9 := (a :* con 3) :* (a :* con 3) :+ (b :* con 3) :* (b :* con 3)) refl a b ⟩
             (a * 3) ² + (b * 3) ²
           ≡⟨ P ⟩
             3 * (c * 3) ²
-          ≡⟨ cong (λ x → 3 * x) (distrib-²-* c 3) ⟩
-            3 * (c ² * 3 ²)
-          ≡⟨ sym (CS.*-assoc 3 (c ²) (3 ²)) ⟩
+          ≡⟨ solve 1 (λ c → con 3 :* ((c :* con 3) :* (c :* con 3)) := (con 3 :* (c :* c)) :* con 9) refl c ⟩
             (3 * c ²) * 3 ²
           ∎
 
