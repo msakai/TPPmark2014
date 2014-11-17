@@ -348,45 +348,44 @@ prop2a a b c a²+b²≡3c² = 3∣²⇒3∣ 3∣a²
           ∎
     
     a²mod3≡0 : a ² mod 3 ≡ Fin.zero
-    a²mod3≡0 with prop1 a
-    ... | inj₁ p = p
-    ... | inj₂ p with prop1 b
-    ...     | inj₁ q = ⊥-elim (1≢0 1≡0)
-                where
-                  1≢0 : ¬ Fin.suc Fin.zero ≡ Fin.zero {2}
-                  1≢0 ()
+    a²mod3≡0 with prop1 a | prop1 b
+    ... | inj₁ p | _ = p
+    ... | inj₂ p | inj₁ q = ⊥-elim (1≢0 1≡0)
+      where
+        1≢0 : ¬ Fin.suc Fin.zero ≡ Fin.zero {2}
+        1≢0 ()
     
-                  1≡0 : Fin.suc Fin.zero ≡ Fin.zero {2}
-                  1≡0 =
-                    begin
-                      Fin.suc Fin.zero
-                    ≡⟨ refl ⟩
-                      (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.zero {2})) mod 3
-                    ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.zero {2})) mod 3) (sym p) ⟩
-                      (toℕ (a ² mod 3) + toℕ (Fin.zero {2})) mod 3
-                    ≡⟨ cong (λ x → (toℕ (a ² mod 3) + toℕ x) mod 3) (sym q) ⟩
-                      (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
-                    ≡⟨ lem1 ⟩
-                      Fin.zero
-                    ∎
-    ...     | inj₂ q = ⊥-elim (2≢0 2≡0)
-                where
-                  2≢0 : ¬ Fin.suc (Fin.suc Fin.zero) ≡ Fin.zero {2}
-                  2≢0 ()
+        1≡0 : Fin.suc Fin.zero ≡ Fin.zero {2}
+        1≡0 =
+          begin
+            Fin.suc Fin.zero
+          ≡⟨ refl ⟩
+            (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.zero {2})) mod 3
+          ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.zero {2})) mod 3) (sym p) ⟩
+            (toℕ (a ² mod 3) + toℕ (Fin.zero {2})) mod 3
+          ≡⟨ cong (λ x → (toℕ (a ² mod 3) + toℕ x) mod 3) (sym q) ⟩
+            (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
+          ≡⟨ lem1 ⟩
+            Fin.zero
+          ∎
+    ... | inj₂ p | inj₂ q = ⊥-elim (2≢0 2≡0)
+      where
+        2≢0 : ¬ Fin.suc (Fin.suc Fin.zero) ≡ Fin.zero {2}
+        2≢0 ()
     
-                  2≡0 : Fin.suc (Fin.suc Fin.zero) ≡ Fin.zero {2}
-                  2≡0 =
-                    begin
-                      Fin.suc (Fin.suc (Fin.zero {0}))
-                    ≡⟨ refl ⟩
-                      (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
-                    ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.suc (Fin.zero {1}))) mod 3) (sym p) ⟩
-                      (toℕ (a ² mod 3) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
-                    ≡⟨ cong (λ x → (toℕ (a ² mod 3) + toℕ x) mod 3) (sym q) ⟩
-                      (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
-                    ≡⟨ lem1 ⟩
-                      Fin.zero
-                    ∎
+        2≡0 : Fin.suc (Fin.suc Fin.zero) ≡ Fin.zero {2}
+        2≡0 =
+          begin
+            Fin.suc (Fin.suc (Fin.zero {0}))
+          ≡⟨ refl ⟩
+            (toℕ (Fin.suc (Fin.zero {1})) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
+          ≡⟨ cong (λ x → (toℕ x + toℕ (Fin.suc (Fin.zero {1}))) mod 3) (sym p) ⟩
+            (toℕ (a ² mod 3) + toℕ (Fin.suc (Fin.zero {1}))) mod 3
+          ≡⟨ cong (λ x → (toℕ (a ² mod 3) + toℕ x) mod 3) (sym q) ⟩
+            (toℕ (a ² mod 3) + toℕ (b ² mod 3)) mod 3
+          ≡⟨ lem1 ⟩
+            Fin.zero
+          ∎
 
     3∣a² : 3 ∣ a ²
     3∣a² = rem≡0⇒∣ a²mod3≡0
