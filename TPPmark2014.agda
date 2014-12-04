@@ -39,12 +39,12 @@ private
 -- Basic arithmetic lemma
 
 cancel-+-right : ∀ i {j k} → j + i ≡ k + i → j ≡ k
-cancel-+-right i {j} {k} P = cancel-+-left i $ 
+cancel-+-right i {j} {k} j+i≡k+i = cancel-+-left i $ 
     begin
       i + j
     ≡⟨ CS.+-comm i j ⟩
       j + i
-    ≡⟨ P ⟩
+    ≡⟨ j+i≡k+i ⟩
       k + i
     ≡⟨ CS.+-comm k i ⟩
       i + k
@@ -329,9 +329,9 @@ abstract
 prop1 : ∀ a → (a ² mod 3 ≡ Fin.zero) ⊎ (a ² mod 3 ≡ Fin.suc (Fin.zero))
 prop1 a rewrite mod-dist-* {2} a a with a mod 3
 ... | Fin.zero = inj₁ refl
-... | (Fin.suc Fin.zero) = inj₂ refl
-... | (Fin.suc (Fin.suc Fin.zero)) = inj₂ refl
-... | (Fin.suc (Fin.suc (Fin.suc ())))
+... | Fin.suc Fin.zero = inj₂ refl
+... | Fin.suc (Fin.suc Fin.zero) = inj₂ refl
+... | Fin.suc (Fin.suc (Fin.suc ()))
 
 -- ---------------------------------------------------------------------------
 -- (ii) Let a ∈ N, b ∈ N and c ∈ N. If a² + b² = 3c² then (3 | a), (3 | b) and (3 | c).
@@ -408,19 +408,19 @@ prop2b a b c a²+b²≡3c² = prop2a b a c $
     open ≡-Reasoning
 
 prop2c : ∀ a b c → (a ² + b ² ≡ 3 * c ²) → (3 ∣ c)
-prop2c a b c P = 3∣²⇒3∣ 3∣c²
+prop2c a b c a²+b²≡3c² = 3∣²⇒3∣ 3∣c²
   where
     9∣a² : 9 ∣ a ²
-    9∣a² = ∣⇒²∣² (prop2a a b c P)
+    9∣a² = ∣⇒²∣² (prop2a a b c a²+b²≡3c²)
 
     9∣b² : 9 ∣ b ²
-    9∣b² = ∣⇒²∣² (prop2b a b c P)
+    9∣b² = ∣⇒²∣² (prop2b a b c a²+b²≡3c²)
 
     9∣a²+b² : 9 ∣ a ² + b ²
     9∣a²+b² = ∣-+ 9∣a² 9∣b²
 
     9∣3*c² : 9 ∣ 3 * c ²
-    9∣3*c² = subst (λ x → 9 ∣ x) P 9∣a²+b²
+    9∣3*c² = subst (λ x → 9 ∣ x) a²+b²≡3c² 9∣a²+b²
 
     3∣c² : 3 ∣ c ²
     3∣c² = /-cong 2 9∣3*c²
